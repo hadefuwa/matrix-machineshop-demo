@@ -1,0 +1,600 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>MATRIX TSL — Machine Shop SCADA</title>
+<meta name="description" content="Live machine shop utilisation &amp; SCADA simulation — proof of concept" />
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' fill='%230a0906'/%3E%3Ccircle cx='50' cy='50' r='30' fill='none' stroke='%23ffb703' stroke-width='8'/%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Oswald:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg-0:#0a0906;
+    --bg-1:#131109;
+    --bg-2:#191509;
+    --panel:#15130c;
+    --panel-2:#1c1810;
+    --line:#332b16;
+    --line-soft:#241f12;
+    --text:#f2ead9;
+    --text-dim:#a89a78;
+    --text-faint:#6b6046;
+    --amber:#ffb703;
+    --amber-dim:#8a6b1f;
+    --green:#5cd67d;
+    --green-dim:#2f6b3f;
+    --red:#ff5a52;
+    --cyan:#5fd0d6;
+    --blue:#6fa8ff;
+    --grid-line: rgba(255,183,3,0.045);
+    --radius:10px;
+    --mono: 'JetBrains Mono', ui-monospace, monospace;
+    --disp: 'Oswald', 'Arial Narrow', sans-serif;
+  }
+  [data-theme="light"]{
+    --bg-0:#f4efe2;
+    --bg-1:#ece3cf;
+    --bg-2:#e7dcc2;
+    --panel:#faf6ea;
+    --panel-2:#f1e9d5;
+    --line:#d9c99a;
+    --line-soft:#e5d8b6;
+    --text:#241f12;
+    --text-dim:#5c5030;
+    --text-faint:#8c7f57;
+    --amber:#a5680a;
+    --amber-dim:#c99a3f;
+    --green:#1f8a45;
+    --green-dim:#5fae7c;
+    --red:#c23a30;
+    --cyan:#177b82;
+    --blue:#2c5fb8;
+    --grid-line: rgba(165,104,10,0.07);
+  }
+  @media (prefers-color-scheme: light){
+    :root:not([data-theme="dark"]){
+      --bg-0:#f4efe2;--bg-1:#ece3cf;--bg-2:#e7dcc2;--panel:#faf6ea;--panel-2:#f1e9d5;
+      --line:#d9c99a;--line-soft:#e5d8b6;--text:#241f12;--text-dim:#5c5030;--text-faint:#8c7f57;
+      --amber:#a5680a;--amber-dim:#c99a3f;--green:#1f8a45;--green-dim:#5fae7c;--red:#c23a30;
+      --cyan:#177b82;--blue:#2c5fb8;--grid-line: rgba(165,104,10,0.07);
+    }
+  }
+
+  *{box-sizing:border-box;margin:0;padding:0}
+  html,body{background:var(--bg-0);color:var(--text)}
+  body{
+    font-family:var(--mono);
+    min-height:100vh;
+    background:
+      radial-gradient(1200px 600px at 15% -10%, var(--bg-2), transparent 60%),
+      radial-gradient(900px 500px at 110% 10%, var(--bg-1), transparent 55%),
+      repeating-linear-gradient(0deg, var(--grid-line) 0 1px, transparent 1px 42px),
+      repeating-linear-gradient(90deg, var(--grid-line) 0 1px, transparent 1px 42px),
+      var(--bg-0);
+    letter-spacing:0.01em;
+    overflow-x:hidden;
+  }
+  ::selection{background:var(--amber);color:#1a1206}
+
+  a{color:inherit}
+
+  /* ---------- header ---------- */
+  header.top{
+    display:flex;justify-content:space-between;align-items:flex-end;gap:20px;flex-wrap:wrap;
+    padding:26px clamp(16px,4vw,44px) 18px;
+    border-bottom:1px solid var(--line);
+    position:relative;
+  }
+  header.top::after{
+    content:'';position:absolute;left:0;right:0;bottom:-1px;height:1px;
+    background:linear-gradient(90deg, var(--amber), transparent 40%);
+  }
+  .brand{display:flex;align-items:center;gap:14px}
+  .brand .mark{
+    width:44px;height:44px;border-radius:50%;
+    border:2px solid var(--amber);position:relative;flex:none;
+    box-shadow:0 0 22px -4px var(--amber);
+  }
+  .brand .mark::before{
+    content:'';position:absolute;inset:9px;border-radius:50%;
+    background:conic-gradient(var(--amber) 0deg 270deg, transparent 270deg 360deg);
+    animation:spin 6s linear infinite;
+  }
+  .brand .mark::after{content:'';position:absolute;inset:15px;border-radius:50%;background:var(--bg-0)}
+  @keyframes spin{to{transform:rotate(360deg)}}
+  .brand h1{
+    font-family:var(--disp);font-weight:700;font-size:clamp(22px,3vw,30px);
+    text-transform:uppercase;letter-spacing:0.06em;line-height:1;
+  }
+  .brand h1 span{color:var(--amber)}
+  .brand .tag{font-family:var(--disp);font-size:12px;color:var(--text-dim);text-transform:uppercase;letter-spacing:0.18em;margin-top:6px}
+
+  .headline-right{display:flex;align-items:center;gap:14px;flex-wrap:wrap}
+  .clock-box{
+    font-family:var(--mono);font-size:13px;color:var(--text-dim);
+    border:1px solid var(--line);background:var(--panel);border-radius:8px;
+    padding:9px 13px;display:flex;flex-direction:column;gap:2px;min-width:150px;
+  }
+  .clock-box .t{font-size:19px;color:var(--text);font-weight:600;letter-spacing:0.04em}
+  .live-pill{
+    display:flex;align-items:center;gap:8px;font-size:11px;letter-spacing:0.14em;
+    text-transform:uppercase;color:var(--green);border:1px solid var(--green-dim);
+    background:rgba(92,214,125,0.06);padding:9px 14px;border-radius:999px;font-family:var(--disp);font-weight:600;
+  }
+  .live-pill .dot{width:8px;height:8px;border-radius:50%;background:var(--green);box-shadow:0 0 10px var(--green);animation:pulse 1.8s ease-in-out infinite}
+  @keyframes pulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.55;transform:scale(.8)}}
+
+  .theme-toggle{
+    border:1px solid var(--line);background:var(--panel);color:var(--text-dim);
+    border-radius:8px;padding:9px 12px;font-family:var(--mono);font-size:12px;cursor:pointer;
+    transition:color .15s, border-color .15s;
+  }
+  .theme-toggle:hover{color:var(--amber);border-color:var(--amber-dim)}
+
+  .banner{
+    text-align:center;font-family:var(--disp);font-size:11px;letter-spacing:0.16em;
+    text-transform:uppercase;color:var(--text-faint);padding:8px;border-bottom:1px solid var(--line-soft);
+    background:repeating-linear-gradient(135deg, transparent 0 12px, var(--line-soft) 12px 13px);
+  }
+  .banner b{color:var(--amber);font-weight:600}
+
+  main{padding:26px clamp(16px,4vw,44px) 60px;max-width:1520px;margin:0 auto}
+
+  /* ---------- section headings ---------- */
+  .sec-head{display:flex;align-items:baseline;gap:10px;margin:34px 0 14px}
+  .sec-head:first-child{margin-top:0}
+  .sec-head .n{font-family:var(--disp);color:var(--amber);font-size:13px;letter-spacing:0.1em}
+  .sec-head h2{
+    font-family:var(--disp);text-transform:uppercase;font-weight:600;letter-spacing:0.08em;
+    font-size:15px;color:var(--text-dim);
+  }
+  .sec-head .rule{flex:1;height:1px;background:var(--line)}
+
+  /* ---------- KPI strip ---------- */
+  .kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:12px}
+  .kpi{
+    background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);
+    padding:16px 18px;position:relative;overflow:hidden;
+    animation:rise .5s ease backwards;
+  }
+  .kpi::before{content:'';position:absolute;left:0;top:0;bottom:0;width:3px;background:var(--amber);opacity:.7}
+  .kpi .label{font-family:var(--disp);font-size:10.5px;text-transform:uppercase;letter-spacing:0.12em;color:var(--text-faint)}
+  .kpi .val{font-size:28px;font-weight:600;margin-top:8px;color:var(--text);font-variant-numeric:tabular-nums}
+  .kpi .sub{font-size:11px;color:var(--text-dim);margin-top:5px}
+  .kpi.warn .val{color:var(--amber)}
+  .kpi.crit .val{color:var(--red)}
+  .kpi.good .val{color:var(--green)}
+
+  @keyframes rise{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
+
+  /* ---------- grid layout ---------- */
+  .layout{display:grid;grid-template-columns:2fr 1fr;gap:16px;align-items:start}
+  @media (max-width:1000px){.layout{grid-template-columns:1fr}}
+
+  .panel{
+    background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);
+    overflow:hidden;animation:rise .55s ease backwards;
+  }
+  .panel-head{
+    display:flex;justify-content:space-between;align-items:center;
+    padding:13px 16px;border-bottom:1px solid var(--line);
+  }
+  .panel-head h3{font-family:var(--disp);font-size:13px;text-transform:uppercase;letter-spacing:0.08em;color:var(--text)}
+  .panel-head .meta{font-size:10.5px;color:var(--text-faint)}
+
+  /* ---------- machines ---------- */
+  .machines{display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:1px;background:var(--line)}
+  .machine{background:var(--panel);padding:16px}
+  .m-top{display:flex;justify-content:space-between;gap:10px;align-items:flex-start}
+  .m-top h4{font-size:14px;font-weight:600;color:var(--text)}
+  .m-type{font-size:10.5px;color:var(--text-faint);margin-top:3px;text-transform:uppercase;letter-spacing:0.04em}
+  .status-tag{
+    font-family:var(--disp);font-size:10px;font-weight:600;letter-spacing:0.09em;
+    padding:4px 8px;border-radius:5px;border:1px solid currentColor;white-space:nowrap;
+  }
+  .status-tag.RUNNING{color:var(--green)}
+  .status-tag.IDLE{color:var(--blue)}
+  .status-tag.WARNING{color:var(--amber)}
+  .status-tag.FAULT{color:var(--red)}
+  .status-tag.OFFLINE{color:var(--text-faint)}
+  .m-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:7px;margin-top:13px}
+  .m-stat{background:var(--panel-2);border:1px solid var(--line-soft);border-radius:6px;padding:7px 8px}
+  .m-stat span{display:block;font-size:9.5px;color:var(--text-faint);text-transform:uppercase;letter-spacing:0.06em}
+  .m-stat strong{display:block;font-size:12.5px;margin-top:3px;color:var(--text);font-weight:600;font-variant-numeric:tabular-nums}
+  .m-bar{height:5px;background:var(--line-soft);border-radius:6px;margin-top:12px;overflow:hidden}
+  .m-bar > i{display:block;height:100%;background:linear-gradient(90deg,var(--amber-dim),var(--amber));transition:width .8s ease}
+
+  /* ---------- utilities ---------- */
+  .util{padding:14px 16px;border-bottom:1px solid var(--line-soft)}
+  .util:last-child{border-bottom:none}
+  .util-line{display:flex;justify-content:space-between;align-items:center}
+  .util-name{font-size:12.5px;font-weight:600;color:var(--text)}
+  .util-val{font-size:15px;font-weight:600;font-variant-numeric:tabular-nums}
+  .util-sub{font-size:10.5px;color:var(--text-faint);margin-top:4px}
+
+  /* ---------- alarms ---------- */
+  .alarms{max-height:280px;overflow-y:auto}
+  .alarm{display:grid;grid-template-columns:8px 1fr auto;gap:10px;padding:11px 16px;border-bottom:1px solid var(--line-soft);align-items:flex-start}
+  .alarm:last-child{border-bottom:none}
+  .a-dot{width:7px;height:7px;border-radius:50%;margin-top:5px;flex:none}
+  .a-dot.amber{background:var(--amber);box-shadow:0 0 8px var(--amber)}
+  .a-dot.red{background:var(--red);box-shadow:0 0 8px var(--red)}
+  .a-main{font-size:12px;color:var(--text)}
+  .a-main small{display:block;color:var(--text-faint);margin-top:3px;font-size:10.5px}
+  .a-time{font-size:10px;color:var(--text-faint);white-space:nowrap}
+
+  /* ---------- trend chart ---------- */
+  .chart-wrap{padding:16px}
+  .chart{position:relative;height:170px}
+  .chart svg{width:100%;height:100%;overflow:visible}
+  .legend{display:flex;gap:16px;margin-top:10px;font-size:10.5px;color:var(--text-dim)}
+  .legend i{width:10px;height:2px;display:inline-block;margin-right:6px;vertical-align:middle}
+
+  /* ---------- network table ---------- */
+  .net-row{display:flex;justify-content:space-between;align-items:center;padding:10px 16px;border-bottom:1px solid var(--line-soft);font-size:12px}
+  .net-row:last-child{border-bottom:none}
+  .proto{font-size:10px;color:var(--cyan);background:rgba(95,208,214,.08);border:1px solid rgba(95,208,214,.3);padding:3px 7px;border-radius:5px;font-family:var(--mono)}
+
+  /* ---------- architecture diagram ---------- */
+  .diagram{padding:26px 20px 20px}
+  .diagram svg{width:100%;height:auto;display:block}
+  .diagram-note{font-size:11px;color:var(--text-faint);text-align:center;margin-top:10px}
+
+  footer{
+    margin-top:50px;padding:20px clamp(16px,4vw,44px) 34px;border-top:1px solid var(--line);
+    display:flex;justify-content:space-between;flex-wrap:wrap;gap:10px;font-size:11px;color:var(--text-faint);
+  }
+  footer a{color:var(--text-dim);text-decoration:none;border-bottom:1px dotted var(--text-faint)}
+  footer a:hover{color:var(--amber);border-color:var(--amber)}
+
+  @media (max-width:640px){
+    .kpis{grid-template-columns:repeat(2,1fr)}
+    .m-stats{grid-template-columns:repeat(3,1fr)}
+  }
+</style>
+</head>
+<body>
+
+<header class="top">
+  <div class="brand">
+    <div class="mark" aria-hidden="true"></div>
+    <div>
+      <h1>MATRIX <span>TSL</span></h1>
+      <div class="tag">Machine Shop · SCADA Console</div>
+    </div>
+  </div>
+  <div class="headline-right">
+    <div class="live-pill"><span class="dot"></span>Live Simulation</div>
+    <div class="clock-box">
+      <span id="date-str">—</span>
+      <span class="t" id="clock">00:00:00</span>
+    </div>
+    <button class="theme-toggle" id="theme-toggle" type="button" aria-label="Toggle light/dark theme">☾ / ☀</button>
+  </div>
+</header>
+
+<div class="banner">Proof-of-concept demonstration — figures are <b>simulated</b>, not live plant data · deployment plan available on request</div>
+
+<main>
+
+  <section class="kpis" id="kpis" aria-label="Key metrics"></section>
+
+  <div class="sec-head"><span class="n">01</span><h2>Machine Status</h2><span class="rule"></span></div>
+  <div class="layout">
+    <section class="panel" style="animation-delay:.05s">
+      <div class="panel-head"><h3>Shop Floor</h3><span class="meta" id="machines-meta">updating…</span></div>
+      <div class="machines" id="machines"></div>
+    </section>
+
+    <div style="display:grid;gap:16px">
+      <section class="panel" style="animation-delay:.1s">
+        <div class="panel-head"><h3>Utilities</h3></div>
+        <div id="utilities"></div>
+      </section>
+      <section class="panel" style="animation-delay:.15s">
+        <div class="panel-head"><h3>Active Alarms</h3><span class="meta" id="alarms-count">0 active</span></div>
+        <div class="alarms" id="alarms"></div>
+      </section>
+    </div>
+  </div>
+
+  <div class="sec-head"><span class="n">02</span><h2>Trends &amp; Connectivity</h2><span class="rule"></span></div>
+  <div class="layout">
+    <section class="panel" style="animation-delay:.2s">
+      <div class="panel-head"><h3>Workshop Power Demand</h3><span class="meta">last 60 samples</span></div>
+      <div class="chart-wrap">
+        <div class="chart"><svg id="chart-svg" viewBox="0 0 800 170" preserveAspectRatio="none"></svg></div>
+        <div class="legend">
+          <span><i style="background:var(--amber)"></i>Instantaneous (kW)</span>
+          <span><i style="background:var(--cyan)"></i>Rolling average (kW)</span>
+        </div>
+      </div>
+    </section>
+    <section class="panel" style="animation-delay:.25s">
+      <div class="panel-head"><h3>Data Connections</h3></div>
+      <div id="network"></div>
+    </section>
+  </div>
+
+  <div class="sec-head"><span class="n">03</span><h2>Architecture</h2><span class="rule"></span></div>
+  <section class="panel" style="animation-delay:.3s">
+    <div class="diagram">
+      <svg viewBox="0 0 960 300" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="SCADA data architecture diagram">
+        <defs>
+          <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+            <path d="M0,0 L10,5 L0,10 z" fill="var(--text-faint)"></path>
+          </marker>
+        </defs>
+        <!-- connecting lines -->
+        <g stroke="var(--line)" stroke-width="1.5" fill="none">
+          <path d="M170,45 H430" marker-end="url(#arrow)"/>
+          <path d="M170,95 H430" marker-end="url(#arrow)"/>
+          <path d="M170,145 H430" marker-end="url(#arrow)"/>
+          <path d="M170,195 H340 V225" marker-end="url(#arrow)"/>
+          <path d="M580,120 H700" marker-end="url(#arrow)"/>
+          <path d="M340,255 H580" marker-end="url(#arrow)"/>
+        </g>
+        <!-- left: machines -->
+        <g font-family="JetBrains Mono, monospace" font-size="12" fill="var(--text)">
+          <rect x="20" y="26" width="150" height="38" rx="6" fill="var(--panel-2)" stroke="var(--green-dim)"/>
+          <text x="95" y="49" text-anchor="middle">HAAS Mill / Lathe</text>
+          <rect x="20" y="76" width="150" height="38" rx="6" fill="var(--panel-2)" stroke="var(--green-dim)"/>
+          <text x="95" y="99" text-anchor="middle">Press Brake (ESA)</text>
+          <rect x="20" y="126" width="150" height="38" rx="6" fill="var(--panel-2)" stroke="var(--green-dim)"/>
+          <text x="95" y="149" text-anchor="middle">Boxford Lasers</text>
+          <rect x="20" y="176" width="150" height="38" rx="6" fill="var(--panel-2)" stroke="var(--amber-dim)"/>
+          <text x="95" y="199" text-anchor="middle">Utilities / Sensors</text>
+        </g>
+        <!-- center: PLC -->
+        <g font-family="Oswald, sans-serif" font-size="13" fill="var(--text)">
+          <rect x="270" y="205" width="140" height="50" rx="6" fill="var(--panel-2)" stroke="var(--amber)" stroke-width="1.5"/>
+          <text x="340" y="226" text-anchor="middle" font-weight="600">SIEMENS</text>
+          <text x="340" y="244" text-anchor="middle" font-weight="600">S7-1200</text>
+        </g>
+        <!-- right: PC/SCADA -->
+        <g font-family="Oswald, sans-serif" font-size="13" fill="var(--text)">
+          <rect x="430" y="95" width="150" height="50" rx="6" fill="var(--panel-2)" stroke="var(--cyan)" stroke-width="1.5"/>
+          <text x="505" y="116" text-anchor="middle" font-weight="600">SCADA PC</text>
+          <text x="505" y="134" text-anchor="middle" font-size="10.5" fill="var(--text-dim)">Server / Historian</text>
+        </g>
+        <g font-family="Oswald, sans-serif" font-size="13" fill="var(--text)">
+          <rect x="700" y="95" width="150" height="50" rx="6" fill="var(--panel-2)" stroke="var(--blue)" stroke-width="1.5"/>
+          <text x="775" y="116" text-anchor="middle" font-weight="600">Dashboard</text>
+          <text x="775" y="134" text-anchor="middle" font-size="10.5" fill="var(--text-dim)">Web / Shop Display</text>
+        </g>
+        <!-- labels on lines -->
+        <g font-family="JetBrains Mono, monospace" font-size="9.5" fill="var(--text-faint)">
+          <text x="300" y="39">Ethernet / MTConnect</text>
+          <text x="300" y="89">Modbus TCP</text>
+          <text x="300" y="139">Ethernet / DSP</text>
+          <text x="200" y="215">24V I/O · 4-20mA</text>
+          <text x="595" y="114">OPC UA</text>
+          <text x="410" y="249">HTTPS / WebSocket</text>
+        </g>
+      </svg>
+      <div class="diagram-note">Intelligent networked equipment connects directly to the SCADA PC; legacy/auxiliary equipment feeds through the S7-1200 as a data-acquisition concentrator.</div>
+    </div>
+  </section>
+
+</main>
+
+<footer>
+  <span>Concept dashboard for management review · not connected to live plant equipment</span>
+  <span>Matrix TSL — internal proof of concept</span>
+</footer>
+
+<script>
+(function(){
+  "use strict";
+
+  /* ---------- theme toggle ---------- */
+  var root = document.documentElement;
+  var saved = null;
+  try { saved = localStorage.getItem('mtsl-theme'); } catch(e){}
+  if(saved) root.setAttribute('data-theme', saved);
+  document.getElementById('theme-toggle').addEventListener('click', function(){
+    var current = root.getAttribute('data-theme');
+    var next = current === 'dark' ? 'light' : (current === 'light' ? 'dark' : (matchMedia('(prefers-color-scheme: dark)').matches ? 'light' : 'dark'));
+    root.setAttribute('data-theme', next);
+    try { localStorage.setItem('mtsl-theme', next); } catch(e){}
+  });
+
+  /* ---------- clock ---------- */
+  function pad(n){return n<10?'0'+n:''+n}
+  function tickClock(){
+    var d = new Date();
+    document.getElementById('clock').textContent = pad(d.getHours())+':'+pad(d.getMinutes())+':'+pad(d.getSeconds());
+    document.getElementById('date-str').textContent = d.toDateString();
+  }
+  tickClock(); setInterval(tickClock, 1000);
+
+  /* ---------- state ---------- */
+  var machines = [
+    {name:'HAAS CNC Mill', type:'Vertical machining centre', status:'RUNNING', program:'OP-1842', extra:'Cycle 03:42', power:8.6, load:78},
+    {name:'HAAS CNC Lathe', type:'ST-series turning centre', status:'IDLE', program:'SHAFT-08', extra:'42 parts', power:2.1, load:40},
+    {name:'Morgan Rushworth Press Brake', type:'PBSL CNC hydraulic', status:'RUNNING', program:'BRKT-19', extra:'126 bends', power:4.4, load:63},
+    {name:'Boxford Metal Laser', type:'Fibre laser cutting cell', status:'RUNNING', program:'PANEL-07', extra:'Chiller 21.8°C', power:6.9, load:84},
+    {name:'Boxford Plastic Laser 1', type:'CO2 laser cutter', status:'WARNING', program:'Filter loading', extra:'Runtime 6.2h', power:1.7, load:56},
+    {name:'Boxford Plastic Laser 2', type:'CO2 laser cutter', status:'RUNNING', program:'LABEL-22', extra:'Runtime 3.7h', power:1.5, load:72},
+  ];
+
+  var utilities = [
+    {name:'Atlas Copco G4FF', val:'7.4 bar', sub:'Compressor loaded · 3.1 kW', cls:''},
+    {name:'CW-5200 Chiller', val:'21.8°C', sub:'Pump running · Normal', cls:''},
+    {name:'HAAS Extraction (CM500)', val:'Healthy', sub:'Airflow OK', cls:'good'},
+    {name:'Shop Extraction Filter', val:'82%', sub:'Filter life remaining', cls:''},
+  ];
+
+  var alarms = [
+    {level:'amber', text:'Plastic Laser 1 filter loading high', sub:'Extraction differential pressure above warning limit', mins:35},
+    {level:'amber', text:'Compressor service approaching', sub:'42 operating hours remaining', mins:190},
+  ];
+
+  var network = [
+    {name:'HAAS Mill', proto:'Ethernet / MTConnect'},
+    {name:'HAAS Lathe', proto:'Ethernet / MDC'},
+    {name:'Press Brake', proto:'ESA LAN-PC'},
+    {name:'S7-1200 DAQ PLC', proto:'OPC UA'},
+    {name:'Energy Meters', proto:'Modbus TCP/RTU'},
+    {name:'Legacy I/O', proto:'24V / 4-20mA'},
+  ];
+
+  var STATUS_ORDER = {RUNNING:0, WARNING:1, IDLE:2, FAULT:3, OFFLINE:4};
+
+  /* ---------- render: machines ---------- */
+  var machinesEl = document.getElementById('machines');
+  function renderMachines(){
+    machinesEl.innerHTML = machines.map(function(m){
+      return '<div class="machine">'
+        +'<div class="m-top"><div><h4>'+m.name+'</h4><div class="m-type">'+m.type+'</div></div>'
+        +'<span class="status-tag '+m.status+'">'+m.status+'</span></div>'
+        +'<div class="m-stats">'
+          +'<div class="m-stat"><span>Program</span><strong>'+m.program+'</strong></div>'
+          +'<div class="m-stat"><span>Info</span><strong>'+m.extra+'</strong></div>'
+          +'<div class="m-stat"><span>Power</span><strong>'+m.power.toFixed(1)+' kW</strong></div>'
+        +'</div>'
+        +'<div class="m-bar"><i style="width:'+m.load+'%"></i></div>'
+      +'</div>';
+    }).join('');
+  }
+
+  /* ---------- render: utilities ---------- */
+  var utilEl = document.getElementById('utilities');
+  function renderUtilities(){
+    utilEl.innerHTML = utilities.map(function(u){
+      return '<div class="util"><div class="util-line"><div class="util-name">'+u.name+'</div>'
+        +'<div class="util-val" style="'+(u.cls==='good'?'color:var(--green)':'')+'">'+u.val+'</div></div>'
+        +'<div class="util-sub">'+u.sub+'</div></div>';
+    }).join('');
+  }
+
+  /* ---------- render: alarms ---------- */
+  var alarmsEl = document.getElementById('alarms');
+  function fmtAgo(mins){
+    if(mins < 60) return mins+'m ago';
+    return Math.floor(mins/60)+'h '+(mins%60)+'m ago';
+  }
+  function renderAlarms(){
+    document.getElementById('alarms-count').textContent = alarms.length + (alarms.length===1?' active':' active');
+    if(!alarms.length){
+      alarmsEl.innerHTML = '<div class="alarm"><div></div><div class="a-main" style="color:var(--green)">No active alarms</div><div></div></div>';
+      return;
+    }
+    alarmsEl.innerHTML = alarms.map(function(a){
+      return '<div class="alarm"><div class="a-dot '+a.level+'"></div>'
+        +'<div class="a-main">'+a.text+'<small>'+a.sub+'</small></div>'
+        +'<div class="a-time">'+fmtAgo(a.mins)+'</div></div>';
+    }).join('');
+  }
+
+  /* ---------- render: network ---------- */
+  var netEl = document.getElementById('network');
+  netEl.innerHTML = network.map(function(n){
+    return '<div class="net-row"><span>'+n.name+'</span><span class="proto">'+n.proto+'</span></div>';
+  }).join('');
+
+  /* ---------- render: KPIs ---------- */
+  var kpiEl = document.getElementById('kpis');
+  function renderKpis(){
+    var running = machines.filter(function(m){return m.status==='RUNNING'}).length;
+    var totalPower = machines.reduce(function(s,m){return s+m.power},0);
+    var util = Math.round(machines.reduce(function(s,m){return s+m.load},0)/machines.length);
+    var kpis = [
+      {label:'Machines Running', val: running+' / '+machines.length, sub: Math.round(running/machines.length*100)+'% active', cls:'good'},
+      {label:'Shop Utilisation', val: util+'%', sub:'Today', cls:''},
+      {label:'Power Demand', val: totalPower.toFixed(1)+' kW', sub:'Workshop total', cls:''},
+      {label:'Air Pressure', val:'7.4 bar', sub:'Atlas Copco G4FF', cls:''},
+      {label:'Active Alarms', val: alarms.length, sub: alarms.length ? '0 critical' : 'All clear', cls: alarms.length ? 'warn':'good'},
+    ];
+    kpiEl.innerHTML = kpis.map(function(k,i){
+      return '<div class="kpi '+k.cls+'" style="animation-delay:'+(i*.05)+'s">'
+        +'<div class="label">'+k.label+'</div><div class="val">'+k.val+'</div><div class="sub">'+k.sub+'</div></div>';
+    }).join('');
+  }
+
+  /* ---------- power chart ---------- */
+  var history = [];
+  for(var i=0;i<60;i++){ history.push(26 + Math.sin(i/6)*6 + Math.random()*3); }
+  var chartSvg = document.getElementById('chart-svg');
+
+  function renderChart(){
+    var w = 800, h = 170, n = history.length;
+    var max = Math.max.apply(null, history) + 4;
+    var min = Math.min.apply(null, history) - 4;
+    function pt(i,v){
+      var x = (i/(n-1))*w;
+      var y = h - ((v-min)/(max-min))*h;
+      return x+','+y.toFixed(1);
+    }
+    var pts = history.map(function(v,i){return pt(i,v)}).join(' ');
+
+    // rolling average
+    var avg = history.map(function(_,i){
+      var s = Math.max(0,i-7), e = i+1;
+      var slice = history.slice(s,e);
+      return slice.reduce(function(a,b){return a+b},0)/slice.length;
+    });
+    var avgPts = avg.map(function(v,i){return pt(i,v)}).join(' ');
+
+    var fillPts = pts+' '+w+','+h+' 0,'+h;
+
+    chartSvg.innerHTML =
+      '<polygon points="'+fillPts+'" fill="url(#g1)" opacity="0.35"></polygon>'
+      +'<defs><linearGradient id="g1" x1="0" y1="0" x2="0" y2="1">'
+      +'<stop offset="0%" stop-color="var(--amber)" stop-opacity="0.5"/>'
+      +'<stop offset="100%" stop-color="var(--amber)" stop-opacity="0"/></linearGradient></defs>'
+      +'<polyline points="'+avgPts+'" fill="none" stroke="var(--cyan)" stroke-width="2" stroke-dasharray="5 4" opacity="0.85"></polyline>'
+      +'<polyline points="'+pts+'" fill="none" stroke="var(--amber)" stroke-width="2.5"></polyline>';
+  }
+
+  /* ---------- simulation tick ---------- */
+  function jitter(v, amt, min, max){
+    var nv = v + (Math.random()-0.5)*amt;
+    return Math.max(min, Math.min(max, nv));
+  }
+
+  var tick = 0;
+  function simulate(){
+    tick++;
+    machines.forEach(function(m){
+      if(m.status === 'RUNNING'){
+        m.power = jitter(m.power, 0.6, 0.8, 12);
+        m.load = jitter(m.load, 4, 15, 98);
+      } else if(m.status === 'IDLE'){
+        m.power = jitter(m.power, 0.15, 0.5, 3);
+        m.load = jitter(m.load, 2, 5, 45);
+      } else if(m.status === 'WARNING'){
+        m.power = jitter(m.power, 0.3, 0.8, 4);
+        m.load = jitter(m.load, 3, 20, 70);
+      }
+      // rare state flip for realism
+      if(Math.random() < 0.01 && m.status === 'IDLE') m.status = 'RUNNING';
+      else if(Math.random() < 0.006 && m.status === 'RUNNING') m.status = 'IDLE';
+    });
+
+    var totalPower = machines.reduce(function(s,m){return s+m.power},0);
+    history.push(totalPower);
+    if(history.length > 60) history.shift();
+
+    document.getElementById('machines-meta').textContent = 'updated '+tick*2+'s ago'.replace(tick*2+'s ago', 'just now');
+    document.getElementById('machines-meta').textContent = 'live · tick #'+tick;
+
+    renderMachines();
+    renderKpis();
+    renderChart();
+  }
+
+  renderMachines();
+  renderUtilities();
+  renderAlarms();
+  renderKpis();
+  renderChart();
+
+  setInterval(simulate, 2200);
+
+})();
+</script>
+</body>
+</html>
