@@ -126,7 +126,8 @@
   .kpi .label{margin-top:10px;font-size:15px;font-weight:600;color:#fff}
   .kpi .hint{margin-top:6px;font-size:11px;color:var(--muted);line-height:1.35}
 
-  .mid{display:grid;grid-template-columns:1.15fr .85fr;gap:16px;margin-bottom:16px}
+  .mid{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px;align-items:stretch}
+  .chart-row{margin-bottom:16px}
 
   .panel{
     background:var(--card);
@@ -148,7 +149,7 @@
     position:relative;
     width:calc(100% - 24px);
     margin:0 12px 18px;
-    height:min(480px, 48vw);
+    height:min(420px, 42vw);
     border-radius:10px;
     overflow:visible;
     background:
@@ -409,74 +410,74 @@
         </article>
       </section>
 
-      <section class="panel map-panel" style="margin-bottom:16px">
-        <div class="panel-head">Shop floor map</div>
-        <div class="panel-sub">Each badge is that machine’s live OEE. Hover (or tab to) a badge for Availability, Performance, Quality and status.</div>
-        <div class="floor" id="floor-map">
-          <svg class="map-svg" viewBox="0 0 1120 500" preserveAspectRatio="xMidYMid meet" aria-hidden="true">
-            <polygon points="551,40 1120,326 680,490 120,210" fill="#1b1b1b" stroke="#2e2e2e" stroke-width="2"></polygon>
-            <polygon data-pad="mill" points="560.0,80.0 696.4,148.2 586.4,203.2 450.0,135.0" fill="#2f2f2f" stroke="#4a4a4a" stroke-width="2"></polygon>
-            <polygon data-pad="lathe" points="740.4,170.2 876.8,238.4 766.8,293.4 630.4,225.2" fill="#2f2f2f" stroke="#4a4a4a" stroke-width="2"></polygon>
-            <polygon data-pad="press" points="920.8,260.4 1057.2,328.6 947.2,383.6 810.8,315.4" fill="#2f2f2f" stroke="#4a4a4a" stroke-width="2"></polygon>
-            <polygon data-pad="plas1" points="406.0,157.0 542.4,225.2 432.4,280.2 296.0,212.0" fill="#2f2f2f" stroke="#4a4a4a" stroke-width="2"></polygon>
-            <polygon data-pad="plas2" points="586.4,247.2 722.8,315.4 612.8,370.4 476.4,302.2" fill="#2f2f2f" stroke="#4a4a4a" stroke-width="2"></polygon>
-            <polygon data-pad="laser" points="766.8,337.4 903.2,405.6 793.2,460.6 656.8,392.4" fill="#2f2f2f" stroke="#4a4a4a" stroke-width="2"></polygon>
-          </svg>
-          <button type="button" class="callout" data-id="mill">
-            <div class="spark">OEE</div>
-            <div><strong class="map-oee">—</strong> <span class="name">HAAS Mill</span></div>
-            <div class="pop"></div>
-          </button>
-          <button type="button" class="callout" data-id="lathe">
-            <div class="spark">OEE</div>
-            <div><strong class="map-oee">—</strong> <span class="name">HAAS Lathe</span></div>
-            <div class="pop"></div>
-          </button>
-          <button type="button" class="callout" data-id="press">
-            <div class="spark">OEE</div>
-            <div><strong class="map-oee">—</strong> <span class="name">Press Brake</span></div>
-            <div class="pop"></div>
-          </button>
-          <button type="button" class="callout pop-up" data-id="plas1">
-            <div class="spark">OEE</div>
-            <div><strong class="map-oee">—</strong> <span class="name">Plastic Laser 1</span></div>
-            <div class="pop"></div>
-          </button>
-          <button type="button" class="callout pop-up" data-id="plas2">
-            <div class="spark">OEE</div>
-            <div><strong class="map-oee">—</strong> <span class="name">Plastic Laser 2</span></div>
-            <div class="pop"></div>
-          </button>
-          <button type="button" class="callout pop-up" data-id="laser">
-            <div class="spark">OEE</div>
-            <div><strong class="map-oee">—</strong> <span class="name">Metal Laser</span></div>
-            <div class="pop"></div>
-          </button>
-        </div>
-      </section>
-
       <section class="mid">
+        <article class="panel map-panel">
+          <div class="panel-head">Shop floor map</div>
+          <div class="panel-sub">Each badge is that machine’s live OEE. Hover (or tab to) a badge for Availability, Performance, Quality and status.</div>
+          <div class="floor" id="floor-map">
+            <svg class="map-svg" viewBox="0 0 1120 500" preserveAspectRatio="xMidYMid meet" aria-hidden="true">
+              <polygon points="551,40 1120,326 680,490 120,210" fill="#1b1b1b" stroke="#2e2e2e" stroke-width="2"></polygon>
+              <polygon data-pad="mill" points="560.0,80.0 696.4,148.2 586.4,203.2 450.0,135.0" fill="#2f2f2f" stroke="#4a4a4a" stroke-width="2"></polygon>
+              <polygon data-pad="lathe" points="740.4,170.2 876.8,238.4 766.8,293.4 630.4,225.2" fill="#2f2f2f" stroke="#4a4a4a" stroke-width="2"></polygon>
+              <polygon data-pad="press" points="920.8,260.4 1057.2,328.6 947.2,383.6 810.8,315.4" fill="#2f2f2f" stroke="#4a4a4a" stroke-width="2"></polygon>
+              <polygon data-pad="plas1" points="406.0,157.0 542.4,225.2 432.4,280.2 296.0,212.0" fill="#2f2f2f" stroke="#4a4a4a" stroke-width="2"></polygon>
+              <polygon data-pad="plas2" points="586.4,247.2 722.8,315.4 612.8,370.4 476.4,302.2" fill="#2f2f2f" stroke="#4a4a4a" stroke-width="2"></polygon>
+              <polygon data-pad="laser" points="766.8,337.4 903.2,405.6 793.2,460.6 656.8,392.4" fill="#2f2f2f" stroke="#4a4a4a" stroke-width="2"></polygon>
+            </svg>
+            <button type="button" class="callout" data-id="mill">
+              <div class="spark">OEE</div>
+              <div><strong class="map-oee">—</strong> <span class="name">HAAS Mill</span></div>
+              <div class="pop"></div>
+            </button>
+            <button type="button" class="callout" data-id="lathe">
+              <div class="spark">OEE</div>
+              <div><strong class="map-oee">—</strong> <span class="name">HAAS Lathe</span></div>
+              <div class="pop"></div>
+            </button>
+            <button type="button" class="callout" data-id="press">
+              <div class="spark">OEE</div>
+              <div><strong class="map-oee">—</strong> <span class="name">Press Brake</span></div>
+              <div class="pop"></div>
+            </button>
+            <button type="button" class="callout pop-up" data-id="plas1">
+              <div class="spark">OEE</div>
+              <div><strong class="map-oee">—</strong> <span class="name">Plastic Laser 1</span></div>
+              <div class="pop"></div>
+            </button>
+            <button type="button" class="callout pop-up" data-id="plas2">
+              <div class="spark">OEE</div>
+              <div><strong class="map-oee">—</strong> <span class="name">Plastic Laser 2</span></div>
+              <div class="pop"></div>
+            </button>
+            <button type="button" class="callout pop-up" data-id="laser">
+              <div class="spark">OEE</div>
+              <div><strong class="map-oee">—</strong> <span class="name">Metal Laser</span></div>
+              <div class="pop"></div>
+            </button>
+          </div>
+        </article>
+
         <article class="panel">
           <div class="panel-head">OEE by machine</div>
           <div class="panel-sub">Purple number is that machine’s OEE. A low score here is dragging shop OEE down — look at Availability / Performance / Quality underneath to see why.</div>
           <div class="machines" id="machines"></div>
         </article>
+      </section>
 
-        <article class="panel">
-          <div class="panel-head">Shop OEE this week</div>
-          <div class="panel-sub">Each day is one point. Hover a day to see the three OEE parts. The live simulation updates today (25 Aug) as if the shift is still running.</div>
-          <div class="chart-box">
-            <div class="chart">
-              <svg id="oee-svg" viewBox="0 0 640 250" preserveAspectRatio="none"></svg>
-              <div class="tooltip" id="chart-tip" hidden></div>
-            </div>
+      <section class="panel chart-row">
+        <div class="panel-head">Shop OEE this week</div>
+        <div class="panel-sub">Each day is one point. Hover a day to see the three OEE parts. The live simulation updates today (25 Aug) as if the shift is still running.</div>
+        <div class="chart-box">
+          <div class="chart">
+            <svg id="oee-svg" viewBox="0 0 640 250" preserveAspectRatio="none"></svg>
+            <div class="tooltip" id="chart-tip" hidden></div>
           </div>
-          <div class="legend">
-            <span><i style="background:#BB86FC"></i>Shop OEE</span>
-            <span><i style="background:#f08a24"></i>Availability</span>
-            <span><i style="background:#5fd0d6"></i>Performance</span>
-          </div>
-        </article>
+        </div>
+        <div class="legend">
+          <span><i style="background:#BB86FC"></i>Shop OEE</span>
+          <span><i style="background:#f08a24"></i>Availability</span>
+          <span><i style="background:#5fd0d6"></i>Performance</span>
+        </div>
       </section>
 
       <section class="panel" id="daily-record">
