@@ -236,6 +236,7 @@
     margin:8px 0 0;
   }
   .m-oee span{font-size:12px;font-weight:500;color:var(--muted)}
+  .m-time{font-size:11px;color:var(--muted);margin-top:8px}
 
   .chart-box{padding:0 18px 8px 8px;position:relative}
   .chart{
@@ -461,7 +462,7 @@
 
         <article class="panel">
           <div class="panel-head">OEE by machine</div>
-          <div class="panel-sub">Each machine’s OEE, plus whether it is Running, Idle or Off.</div>
+          <div class="panel-sub">Each machine’s OEE and whether it is Running, Idle or Off, plus when it was last turned on or powered.</div>
           <div class="machines" id="machines"></div>
         </article>
       </section>
@@ -532,12 +533,12 @@
   var hoverIndex = 8;
 
   var machines = [
-    { id:"mill", name:"HAAS CNC Mill", type:"Vertical machining centre", status:"RUNNING", avail:86, perf:94, qual:98 },
-    { id:"lathe", name:"HAAS CNC Lathe", type:"ST-series turning centre", status:"IDLE", avail:61, perf:88, qual:99 },
-    { id:"press", name:"Morgan Rushworth Press Brake", type:"PBSL CNC hydraulic", status:"RUNNING", avail:44.5, perf:91.0, qual:98.8, lockOee:true },
-    { id:"laser", name:"Boxford Metal Laser", type:"Fibre laser cutting cell", status:"WARNING", avail:5.4, perf:94.0, qual:98.5, lockOee:true },
-    { id:"plas1", name:"Boxford Plastic Laser 1", type:"CO2 laser cutter", status:"WARNING", avail:70, perf:85, qual:94 },
-    { id:"plas2", name:"Boxford Plastic Laser 2", type:"CO2 laser cutter", status:"RUNNING", avail:82, perf:90, qual:98 }
+    { id:"mill", name:"HAAS CNC Mill", type:"Vertical machining centre", status:"RUNNING", avail:86, perf:94, qual:98, since: new Date(2026, 7, 25, 6, 12) },
+    { id:"lathe", name:"HAAS CNC Lathe", type:"ST-series turning centre", status:"IDLE", avail:61, perf:88, qual:99, since: new Date(2026, 7, 25, 8, 40) },
+    { id:"press", name:"Morgan Rushworth Press Brake", type:"PBSL CNC hydraulic", status:"RUNNING", avail:44.5, perf:91.0, qual:98.8, lockOee:true, since: new Date(2026, 7, 25, 7, 5) },
+    { id:"laser", name:"Boxford Metal Laser", type:"Fibre laser cutting cell", status:"WARNING", avail:5.4, perf:94.0, qual:98.5, lockOee:true, since: new Date(2026, 7, 24, 16, 22) },
+    { id:"plas1", name:"Boxford Plastic Laser 1", type:"CO2 laser cutter", status:"WARNING", avail:70, perf:85, qual:94, since: new Date(2026, 7, 25, 9, 48) },
+    { id:"plas2", name:"Boxford Plastic Laser 2", type:"CO2 laser cutter", status:"RUNNING", avail:82, perf:90, qual:98, since: new Date(2026, 7, 25, 8, 2) }
   ];
 
   var labels = ["17 Aug","18 Aug","19 Aug","20 Aug","21 Aug","22 Aug","23 Aug","24 Aug","25 Aug"];
@@ -633,6 +634,23 @@
     return "OFF";
   }
 
+  function pad2(n){
+    if(n < 10) return "0" + n;
+    return "" + n;
+  }
+
+  function formatStamp(d){
+    var months = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
+    return d.getDate() + " " + months[d.getMonth()] + " " + d.getFullYear() + " " + pad2(d.getHours()) + ":" + pad2(d.getMinutes());
+  }
+
+  function timeLine(m){
+    if(m.status === "RUNNING" || m.status === "IDLE"){
+      return "Turned on " + formatStamp(m.since);
+    }
+    return "Last powered " + formatStamp(m.since);
+  }
+
   function renderMachines(){
     var html = "";
     var i;
@@ -644,6 +662,7 @@
         + '<div class="m-top"><div><h3>' + m.name + '</h3><div class="m-type">' + m.type + '</div></div>'
         + '<span class="status ' + statusClass(m.status) + '">' + statusLabel(m.status) + '</span></div>'
         + '<div class="m-oee">' + pct(oee) + '<span> OEE</span></div>'
+        + '<div class="m-time">' + timeLine(m) + '</div>'
         + '</article>';
     }
     document.getElementById("machines").innerHTML = html;
@@ -811,8 +830,11 @@
       }
     }
 
-    if(Math.random() < 0.02 && machines[1].status === "IDLE") machines[1].status = "RUNNING";
-    else if(Math.random() < 0.015 && machines[1].status === "RUNNING") machines[1].status = "IDLE";
+    if(Math.random() < 0.02 && machines[1].status === "IDLE"){
+      machines[1].status = "RUNNING";
+    } else if(Math.random() < 0.015 && machines[1].status === "RUNNING"){
+      machines[1].status = "IDLE";
+    }
 
     syncTodayFromMachines();
     renderKpis();
