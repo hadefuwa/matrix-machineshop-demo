@@ -4,594 +4,861 @@
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>MATRIX TSL — Machine Shop SCADA</title>
-<meta name="description" content="Live machine shop utilisation &amp; SCADA simulation — proof of concept" />
-<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' fill='%230a0906'/%3E%3Ccircle cx='50' cy='50' r='30' fill='none' stroke='%23ffb703' stroke-width='8'/%3E%3C/svg%3E">
+<meta name="description" content="Live machine shop OEE simulation — proof of concept" />
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' rx='20' fill='%23111111'/%3E%3Cpath d='M28 72V28h12l10 28 10-28h12v44h-10V44L52 72h-4L38 44v28H28z' fill='%23BB86FC'/%3E%3C/svg%3E">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Oswald:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <style>
   :root{
-    --bg-0:#0a0906;
-    --bg-1:#131109;
-    --bg-2:#191509;
-    --panel:#15130c;
-    --panel-2:#1c1810;
-    --line:#332b16;
-    --line-soft:#241f12;
-    --text:#f2ead9;
-    --text-dim:#a89a78;
-    --text-faint:#6b6046;
-    --amber:#ffb703;
-    --amber-dim:#8a6b1f;
-    --green:#5cd67d;
-    --green-dim:#2f6b3f;
-    --red:#ff5a52;
+    --bg:#111111;
+    --card:#1c1c1c;
+    --line:#2a2a2a;
+    --text:#ffffff;
+    --muted:#9a9a9a;
+    --green:#BB86FC;
+    --orange:#f08a24;
     --cyan:#5fd0d6;
-    --blue:#6fa8ff;
-    --grid-line: rgba(255,183,3,0.045);
-    --radius:10px;
-    --mono: 'JetBrains Mono', ui-monospace, monospace;
-    --disp: 'Oswald', 'Arial Narrow', sans-serif;
-  }
-  [data-theme="light"]{
-    --bg-0:#f4efe2;
-    --bg-1:#ece3cf;
-    --bg-2:#e7dcc2;
-    --panel:#faf6ea;
-    --panel-2:#f1e9d5;
-    --line:#d9c99a;
-    --line-soft:#e5d8b6;
-    --text:#241f12;
-    --text-dim:#5c5030;
-    --text-faint:#8c7f57;
-    --amber:#a5680a;
-    --amber-dim:#c99a3f;
-    --green:#1f8a45;
-    --green-dim:#5fae7c;
-    --red:#c23a30;
-    --cyan:#177b82;
-    --blue:#2c5fb8;
-    --grid-line: rgba(165,104,10,0.07);
-  }
-  @media (prefers-color-scheme: light){
-    :root:not([data-theme="dark"]){
-      --bg-0:#f4efe2;--bg-1:#ece3cf;--bg-2:#e7dcc2;--panel:#faf6ea;--panel-2:#f1e9d5;
-      --line:#d9c99a;--line-soft:#e5d8b6;--text:#241f12;--text-dim:#5c5030;--text-faint:#8c7f57;
-      --amber:#a5680a;--amber-dim:#c99a3f;--green:#1f8a45;--green-dim:#5fae7c;--red:#c23a30;
-      --cyan:#177b82;--blue:#2c5fb8;--grid-line: rgba(165,104,10,0.07);
-    }
+    --link:#6ea8ff;
+    --red:#ff5a52;
+    --ok:#6ee7a8;
+    --idle:#8ab4ff;
+    --warn:#f0b429;
+    --radius:12px;
+    --sidebar:68px;
+    --header:56px;
+    --font:'Inter', Segoe UI, sans-serif;
   }
 
   *{box-sizing:border-box;margin:0;padding:0}
-  html,body{background:var(--bg-0);color:var(--text)}
-  body{
-    font-family:var(--mono);
-    min-height:100vh;
-    background:
-      radial-gradient(1200px 600px at 15% -10%, var(--bg-2), transparent 60%),
-      radial-gradient(900px 500px at 110% 10%, var(--bg-1), transparent 55%),
-      repeating-linear-gradient(0deg, var(--grid-line) 0 1px, transparent 1px 42px),
-      repeating-linear-gradient(90deg, var(--grid-line) 0 1px, transparent 1px 42px),
-      var(--bg-0);
-    letter-spacing:0.01em;
-    overflow-x:hidden;
-  }
-  ::selection{background:var(--amber);color:#1a1206}
-
+  html,body{height:100%;background:var(--bg);color:var(--text);font-family:var(--font)}
+  body{overflow-x:hidden}
+  button{font-family:inherit;cursor:pointer}
   a{color:inherit}
 
-  /* ---------- header ---------- */
-  header.top{
-    display:flex;justify-content:space-between;align-items:flex-end;gap:20px;flex-wrap:wrap;
-    padding:26px clamp(16px,4vw,44px) 18px;
+  .app{
+    display:grid;
+    grid-template-columns:var(--sidebar) 1fr;
+    min-height:100vh;
+  }
+
+  .sidebar{
+    background:#141414;
+    border-right:1px solid var(--line);
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    padding:18px 0 16px;
+    position:sticky;
+    top:0;
+    height:100vh;
+  }
+  .logo{
+    width:36px;height:36px;border-radius:10px;
+    background:var(--green);color:#1a1024;
+    display:grid;place-items:center;
+    font-weight:800;font-size:18px;
+    margin-bottom:28px;
+  }
+  .nav-icons{display:flex;flex-direction:column;gap:8px;flex:1}
+  .nav-btn{
+    width:42px;height:42px;border:0;border-radius:12px;
+    background:transparent;color:#7a7a7a;
+    display:grid;place-items:center;
+  }
+  .nav-btn svg{width:20px;height:20px;stroke:currentColor;fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+  .nav-btn.active,.nav-btn:hover{background:#1f1f1f;color:var(--green)}
+  .nav-bottom{display:flex;flex-direction:column;gap:8px}
+
+  .workspace{min-width:0}
+  .topbar{
+    height:var(--header);
+    display:flex;align-items:center;justify-content:space-between;
+    padding:0 22px;gap:16px;
     border-bottom:1px solid var(--line);
-    position:relative;
+    background:var(--bg);
+    position:sticky;top:0;z-index:5;
   }
-  header.top::after{
-    content:'';position:absolute;left:0;right:0;bottom:-1px;height:1px;
-    background:linear-gradient(90deg, var(--amber), transparent 40%);
+  .topbar-left{display:flex;align-items:center;gap:12px}
+  .icon-btn{
+    width:34px;height:34px;border:0;border-radius:8px;
+    background:transparent;color:#cfcfcf;
+    display:grid;place-items:center;
   }
-  .brand{display:flex;align-items:center;gap:14px}
-  .brand .mark{
-    width:44px;height:44px;border-radius:50%;
-    border:2px solid var(--amber);position:relative;flex:none;
-    box-shadow:0 0 22px -4px var(--amber);
+  .icon-btn:hover{background:#222;color:var(--green)}
+  .icon-btn svg{width:18px;height:18px;stroke:currentColor;fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+  .page-title{font-size:18px;font-weight:600}
+  .topbar-right{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+  .chip{
+    display:flex;align-items:center;gap:8px;
+    background:var(--card);border:1px solid var(--line);
+    color:#eaeaea;border-radius:10px;
+    padding:8px 12px;font-size:13px;font-weight:500;
   }
-  .brand .mark::before{
-    content:'';position:absolute;inset:9px;border-radius:50%;
-    background:conic-gradient(var(--amber) 0deg 270deg, transparent 270deg 360deg);
-    animation:spin 6s linear infinite;
-  }
-  .brand .mark::after{content:'';position:absolute;inset:15px;border-radius:50%;background:var(--bg-0)}
-  @keyframes spin{to{transform:rotate(360deg)}}
-  .brand h1{
-    font-family:var(--disp);font-weight:700;font-size:clamp(22px,3vw,30px);
-    text-transform:uppercase;letter-spacing:0.06em;line-height:1;
-  }
-  .brand h1 span{color:var(--amber)}
-  .brand .tag{font-family:var(--disp);font-size:12px;color:var(--text-dim);text-transform:uppercase;letter-spacing:0.18em;margin-top:6px}
-
-  .headline-right{display:flex;align-items:center;gap:14px;flex-wrap:wrap}
-  .clock-box{
-    font-family:var(--mono);font-size:13px;color:var(--text-dim);
-    border:1px solid var(--line);background:var(--panel);border-radius:8px;
-    padding:9px 13px;display:flex;flex-direction:column;gap:2px;min-width:150px;
-  }
-  .clock-box .t{font-size:19px;color:var(--text);font-weight:600;letter-spacing:0.04em}
-  .live-pill{
-    display:flex;align-items:center;gap:8px;font-size:11px;letter-spacing:0.14em;
-    text-transform:uppercase;color:var(--green);border:1px solid var(--green-dim);
-    background:rgba(92,214,125,0.06);padding:9px 14px;border-radius:999px;font-family:var(--disp);font-weight:600;
-  }
-  .live-pill .dot{width:8px;height:8px;border-radius:50%;background:var(--green);box-shadow:0 0 10px var(--green);animation:pulse 1.8s ease-in-out infinite}
-  @keyframes pulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.55;transform:scale(.8)}}
-
-  .theme-toggle{
-    border:1px solid var(--line);background:var(--panel);color:var(--text-dim);
-    border-radius:8px;padding:9px 12px;font-family:var(--mono);font-size:12px;cursor:pointer;
-    transition:color .15s, border-color .15s;
-  }
-  .theme-toggle:hover{color:var(--amber);border-color:var(--amber-dim)}
-
+  .chip svg{width:16px;height:16px;stroke:currentColor;fill:none;stroke-width:1.8}
+  .chip .caret{opacity:.6;width:12px;height:12px}
   .banner{
-    text-align:center;font-family:var(--disp);font-size:11px;letter-spacing:0.16em;
-    text-transform:uppercase;color:var(--text-faint);padding:8px;border-bottom:1px solid var(--line-soft);
-    background:repeating-linear-gradient(135deg, transparent 0 12px, var(--line-soft) 12px 13px);
+    text-align:center;font-size:11px;letter-spacing:.04em;
+    color:var(--muted);padding:8px 16px;
+    border-bottom:1px solid var(--line);
+    background:#141414;
   }
-  .banner b{color:var(--amber);font-weight:600}
+  .banner b{color:var(--green);font-weight:600}
 
-  main{padding:26px clamp(16px,4vw,44px) 60px;max-width:1520px;margin:0 auto}
+  .content{padding:18px 22px 40px;max-width:1480px}
 
-  /* ---------- section headings ---------- */
-  .sec-head{display:flex;align-items:baseline;gap:10px;margin:34px 0 14px}
-  .sec-head:first-child{margin-top:0}
-  .sec-head .n{font-family:var(--disp);color:var(--amber);font-size:13px;letter-spacing:0.1em}
-  .sec-head h2{
-    font-family:var(--disp);text-transform:uppercase;font-weight:600;letter-spacing:0.08em;
-    font-size:15px;color:var(--text-dim);
+  .formula{
+    background:#171717;border:1px solid var(--line);border-radius:10px;
+    padding:10px 14px;margin-bottom:16px;
+    font-size:13px;color:#cfcfcf;
   }
-  .sec-head .rule{flex:1;height:1px;background:var(--line)}
+  .formula strong{color:var(--green)}
 
-  /* ---------- KPI strip ---------- */
-  .kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:12px}
+  .kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-bottom:16px}
   .kpi{
-    background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);
-    padding:16px 18px;position:relative;overflow:hidden;
-    animation:rise .5s ease backwards;
+    background:var(--card);border-radius:var(--radius);
+    padding:20px 14px 16px;text-align:center;
   }
-  .kpi::before{content:'';position:absolute;left:0;top:0;bottom:0;width:3px;background:var(--amber);opacity:.7}
-  .kpi .label{font-family:var(--disp);font-size:10.5px;text-transform:uppercase;letter-spacing:0.12em;color:var(--text-faint)}
-  .kpi .val{font-size:28px;font-weight:600;margin-top:8px;color:var(--text);font-variant-numeric:tabular-nums}
-  .kpi .sub{font-size:11px;color:var(--text-dim);margin-top:5px}
-  .kpi.warn .val{color:var(--amber)}
-  .kpi.crit .val{color:var(--red)}
-  .kpi.good .val{color:var(--green)}
+  .kpi .val{
+    font-size:42px;font-weight:800;color:var(--green);
+    letter-spacing:-0.03em;line-height:1;
+  }
+  .kpi .label{margin-top:10px;font-size:15px;font-weight:600;color:#fff}
+  .kpi .hint{margin-top:6px;font-size:11px;color:var(--muted);line-height:1.35}
 
-  @keyframes rise{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
-
-  /* ---------- grid layout ---------- */
-  .layout{display:grid;grid-template-columns:2fr 1fr;gap:16px;align-items:start}
-  @media (max-width:1000px){.layout{grid-template-columns:1fr}}
+  .mid{display:grid;grid-template-columns:1.15fr .85fr;gap:16px;margin-bottom:16px}
 
   .panel{
-    background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);
-    overflow:hidden;animation:rise .55s ease backwards;
+    background:var(--card);
+    border-radius:var(--radius);
+    overflow:hidden;
+    min-height:320px;
   }
   .panel-head{
-    display:flex;justify-content:space-between;align-items:center;
-    padding:13px 16px;border-bottom:1px solid var(--line);
+    padding:16px 18px 4px;
+    font-size:16px;font-weight:600;
   }
-  .panel-head h3{font-family:var(--disp);font-size:13px;text-transform:uppercase;letter-spacing:0.08em;color:var(--text)}
-  .panel-head .meta{font-size:10.5px;color:var(--text-faint)}
-
-  /* ---------- machines ---------- */
-  .machines{display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:1px;background:var(--line)}
-  .machine{background:var(--panel);padding:16px}
-  .m-top{display:flex;justify-content:space-between;gap:10px;align-items:flex-start}
-  .m-top h4{font-size:14px;font-weight:600;color:var(--text)}
-  .m-type{font-size:10.5px;color:var(--text-faint);margin-top:3px;text-transform:uppercase;letter-spacing:0.04em}
-  .status-tag{
-    font-family:var(--disp);font-size:10px;font-weight:600;letter-spacing:0.09em;
-    padding:4px 8px;border-radius:5px;border:1px solid currentColor;white-space:nowrap;
+  .panel-sub{
+    padding:0 18px 12px;
+    font-size:12px;color:var(--muted);line-height:1.45;
   }
-  .status-tag.RUNNING{color:var(--green)}
-  .status-tag.IDLE{color:var(--blue)}
-  .status-tag.WARNING{color:var(--amber)}
-  .status-tag.FAULT{color:var(--red)}
-  .status-tag.OFFLINE{color:var(--text-faint)}
-  .m-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:7px;margin-top:13px}
-  .m-stat{background:var(--panel-2);border:1px solid var(--line-soft);border-radius:6px;padding:7px 8px}
-  .m-stat span{display:block;font-size:9.5px;color:var(--text-faint);text-transform:uppercase;letter-spacing:0.06em}
-  .m-stat strong{display:block;font-size:12.5px;margin-top:3px;color:var(--text);font-weight:600;font-variant-numeric:tabular-nums}
-  .m-bar{height:5px;background:var(--line-soft);border-radius:6px;margin-top:12px;overflow:hidden}
-  .m-bar > i{display:block;height:100%;background:linear-gradient(90deg,var(--amber-dim),var(--amber));transition:width .8s ease}
+  .map-panel{min-height:0}
 
-  /* ---------- utilities ---------- */
-  .util{padding:14px 16px;border-bottom:1px solid var(--line-soft)}
-  .util:last-child{border-bottom:none}
-  .util-line{display:flex;justify-content:space-between;align-items:center}
-  .util-name{font-size:12.5px;font-weight:600;color:var(--text)}
-  .util-val{font-size:15px;font-weight:600;font-variant-numeric:tabular-nums}
-  .util-sub{font-size:10.5px;color:var(--text-faint);margin-top:4px}
+  .floor{
+    position:relative;height:380px;margin:0 12px 18px;
+    border-radius:10px;overflow:hidden;
+    background:
+      radial-gradient(circle at 20% 30%, #2a2a2a 0 2px, transparent 2px),
+      radial-gradient(circle at 80% 70%, #2a2a2a 0 2px, transparent 2px),
+      linear-gradient(135deg,#1a1a1a,#151515);
+  }
+  .iso{
+    position:absolute;inset:18px 10px 10px;
+    transform:perspective(900px) rotateX(52deg) rotateZ(-32deg);
+    transform-origin:center;
+    pointer-events:none;
+  }
+  .pad{
+    position:absolute;background:#2b2b2b;border:1px solid #3a3a3a;
+    box-shadow:8px 8px 0 #0e0e0e;
+  }
+  .pad.a{left:8%;top:18%;width:38%;height:28%}
+  .pad.b{left:52%;top:10%;width:34%;height:24%}
+  .pad.c{left:18%;top:52%;width:28%;height:22%}
+  .pad.d{left:52%;top:42%;width:40%;height:30%}
+  .pad.e{left:8%;top:78%;width:22%;height:14%}
 
-  /* ---------- alarms ---------- */
-  .alarms{max-height:280px;overflow-y:auto}
-  .alarm{display:grid;grid-template-columns:8px 1fr auto;gap:10px;padding:11px 16px;border-bottom:1px solid var(--line-soft);align-items:flex-start}
-  .alarm:last-child{border-bottom:none}
-  .a-dot{width:7px;height:7px;border-radius:50%;margin-top:5px;flex:none}
-  .a-dot.amber{background:var(--amber);box-shadow:0 0 8px var(--amber)}
-  .a-dot.red{background:var(--red);box-shadow:0 0 8px var(--red)}
-  .a-main{font-size:12px;color:var(--text)}
-  .a-main small{display:block;color:var(--text-faint);margin-top:3px;font-size:10.5px}
-  .a-time{font-size:10px;color:var(--text-faint);white-space:nowrap}
+  .callout{
+    position:absolute;z-index:2;
+    display:flex;align-items:center;gap:8px;
+    background:#1a1a1a;border:1px solid #333;
+    border-radius:999px;padding:6px 12px 6px 6px;
+    box-shadow:0 8px 20px rgba(0,0,0,.45);
+    white-space:nowrap;
+    color:inherit;font:inherit;
+    cursor:pointer;
+  }
+  .callout:hover,.callout:focus{
+    z-index:8;
+    border-color:var(--green);
+    outline:none;
+  }
+  .callout .spark{
+    width:28px;height:28px;border-radius:50%;
+    background:rgba(187,134,252,.18);color:var(--green);
+    display:grid;place-items:center;flex:none;
+    font-size:10px;font-weight:800;
+  }
+  .callout strong{font-size:13px;font-weight:700;color:var(--green)}
+  .callout .name{color:#cfcfcf;font-size:12px;font-weight:500}
+  .pop{
+    display:none;
+    position:absolute;
+    left:0;top:calc(100% + 10px);
+    width:220px;
+    background:#121212;
+    border:1px solid #3a3a3a;
+    border-radius:12px;
+    padding:12px;
+    box-shadow:0 16px 40px rgba(0,0,0,.55);
+    white-space:normal;
+    text-align:left;
+    z-index:9;
+  }
+  .callout:hover .pop,.callout:focus .pop{display:block}
+  .c3 .pop,.c4 .pop{left:auto;right:0}
+  .c5 .pop,.c6 .pop{top:auto;bottom:calc(100% + 10px)}
+  .pop h4{font-size:13px;margin-bottom:2px}
+  .pop .pop-type{font-size:11px;color:var(--muted);margin-bottom:8px}
+  .pop .pop-oee{font-size:22px;font-weight:800;color:var(--green);margin-bottom:8px}
+  .pop .pop-row{display:flex;justify-content:space-between;font-size:12px;padding:4px 0;border-top:1px solid #2a2a2a}
+  .pop .pop-row span{color:var(--muted)}
+  .c1{left:7%;top:16%}
+  .c2{left:40%;top:8%}
+  .c3{left:66%;top:20%}
+  .c4{right:7%;top:46%}
+  .c5{left:18%;bottom:16%}
+  .c6{left:46%;bottom:8%}
 
-  /* ---------- trend chart ---------- */
-  .chart-wrap{padding:16px}
-  .chart{position:relative;height:170px}
-  .chart svg{width:100%;height:100%;overflow:visible}
-  .legend{display:flex;gap:16px;margin-top:10px;font-size:10.5px;color:var(--text-dim)}
-  .legend i{width:10px;height:2px;display:inline-block;margin-right:6px;vertical-align:middle}
+  .machines{
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:10px;
+    padding:0 14px 16px;
+  }
+  .m-card{
+    background:#161616;border:1px solid #2b2b2b;border-radius:10px;
+    padding:12px;
+  }
+  .m-top{display:flex;justify-content:space-between;align-items:flex-start;gap:8px}
+  .m-card h3{font-size:13px;font-weight:600}
+  .m-type{font-size:11px;color:var(--muted);margin-top:3px}
+  .status{
+    font-size:10px;font-weight:700;letter-spacing:.04em;
+    padding:3px 7px;border-radius:999px;border:1px solid currentColor;
+    white-space:nowrap;
+  }
+  .RUNNING{color:var(--ok)}
+  .IDLE{color:var(--idle)}
+  .WARNING{color:var(--warn)}
+  .m-oee{
+    font-size:26px;font-weight:800;color:var(--green);
+    margin:8px 0 8px;
+  }
+  .m-oee span{font-size:12px;font-weight:500;color:var(--muted);margin-left:4px}
+  .mini{display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px}
+  .mini div{background:#1f1f1f;border-radius:6px;padding:6px 6px 5px}
+  .mini span{display:block;font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:.04em}
+  .mini strong{display:block;font-size:12px;margin-top:2px}
 
-  /* ---------- network table ---------- */
-  .net-row{display:flex;justify-content:space-between;align-items:center;padding:10px 16px;border-bottom:1px solid var(--line-soft);font-size:12px}
-  .net-row:last-child{border-bottom:none}
-  .proto{font-size:10px;color:var(--cyan);background:rgba(95,208,214,.08);border:1px solid rgba(95,208,214,.3);padding:3px 7px;border-radius:5px;font-family:var(--mono)}
+  .chart-box{padding:0 8px 8px 8px;position:relative}
+  .chart{height:250px;position:relative}
+  .chart svg{width:100%;height:100%;display:block;overflow:visible}
+  .axis{font-size:11px;fill:#8d8d8d;font-family:var(--font)}
+  .tooltip{
+    position:absolute;pointer-events:none;
+    background:#111;border:1px solid #333;border-radius:8px;
+    padding:8px 10px;font-size:12px;color:#fff;line-height:1.45;
+    box-shadow:0 8px 18px rgba(0,0,0,.4);
+    transform:translate(-20%,-120%);
+    min-width:150px;
+  }
+  .tooltip b{color:var(--green)}
+  .legend{
+    display:flex;flex-wrap:wrap;gap:14px;
+    padding:0 18px 16px;
+    font-size:12px;color:#cfcfcf;
+  }
+  .legend i{
+    width:14px;height:3px;display:inline-block;
+    margin-right:6px;vertical-align:middle;border-radius:2px;
+  }
 
-  /* ---------- architecture diagram ---------- */
-  .diagram{padding:26px 20px 20px}
-  .diagram svg{width:100%;height:auto;display:block}
-  .diagram-note{font-size:11px;color:var(--text-faint);text-align:center;margin-top:10px}
+  .fold-btn{
+    display:flex;align-items:center;justify-content:space-between;gap:12px;
+    width:100%;border:0;background:transparent;color:inherit;
+    padding:16px 18px 12px;text-align:left;cursor:pointer;
+  }
+  .fold-btn .panel-head{padding:0}
+  .fold-btn .chevron{
+    width:28px;height:28px;border-radius:8px;background:#222;
+    display:grid;place-items:center;flex:none;color:var(--green);
+    transition:transform .2s ease;
+  }
+  .fold-btn .chevron svg{width:16px;height:16px;stroke:currentColor;fill:none;stroke-width:2}
+  .panel.open .fold-btn .chevron{transform:rotate(180deg)}
+  .fold-body{display:none}
+  .panel.open .fold-body{display:block}
+  .fold-btn .panel-sub{padding:6px 0 0}
+  table{width:100%;border-collapse:collapse;min-width:780px}
+  th{
+    text-align:left;color:var(--green);font-size:13px;font-weight:600;
+    padding:14px 16px;border-bottom:1px solid var(--line);
+    white-space:nowrap;
+  }
+  td{
+    padding:14px 16px;font-size:13px;color:#fff;
+    border-bottom:1px solid #262626;
+  }
+  td a{color:var(--link);text-decoration:underline;text-underline-offset:2px}
+  tbody tr:hover{background:#202020}
 
   footer{
-    margin-top:50px;padding:20px clamp(16px,4vw,44px) 34px;border-top:1px solid var(--line);
-    display:flex;justify-content:space-between;flex-wrap:wrap;gap:10px;font-size:11px;color:var(--text-faint);
+    margin-top:18px;padding:8px 4px 0;
+    display:flex;justify-content:space-between;flex-wrap:wrap;gap:8px;
+    font-size:11px;color:var(--muted);
   }
-  footer a{color:var(--text-dim);text-decoration:none;border-bottom:1px dotted var(--text-faint)}
-  footer a:hover{color:var(--amber);border-color:var(--amber)}
+  footer a{color:#bbb}
 
-  @media (max-width:640px){
+  @media (max-width:1100px){
     .kpis{grid-template-columns:repeat(2,1fr)}
-    .m-stats{grid-template-columns:repeat(3,1fr)}
+    .mid{grid-template-columns:1fr}
+    .kpi .val{font-size:34px}
+  }
+  @media (max-width:700px){
+    .app{grid-template-columns:1fr}
+    .sidebar{display:none}
+    .machines{grid-template-columns:1fr}
+    .topbar{padding:0 12px}
+    .content{padding:14px 12px 32px}
+    .chip span{display:none}
   }
 </style>
 </head>
 <body>
+<div class="app">
 
-<header class="top">
-  <div class="brand">
-    <div class="mark" aria-hidden="true"></div>
-    <div>
-      <h1>MATRIX <span>TSL</span></h1>
-      <div class="tag">Machine Shop · SCADA Console</div>
+  <aside class="sidebar" aria-label="Main navigation">
+    <div class="logo" title="Matrix TSL">M</div>
+    <nav class="nav-icons">
+      <button class="nav-btn active" type="button" title="Dashboard" aria-current="page">
+        <svg viewBox="0 0 24 24"><path d="M3 10.5 12 3l9 7.5V20a1 1 0 0 1-1 1h-5v-7H9v7H4a1 1 0 0 1-1-1z"/></svg>
+      </button>
+      <button class="nav-btn" type="button" title="Machines">
+        <svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
+      </button>
+      <button class="nav-btn" type="button" title="People">
+        <svg viewBox="0 0 24 24"><circle cx="9" cy="8" r="3"/><path d="M3 19a6 6 0 0 1 12 0"/><circle cx="17" cy="9" r="2.2"/><path d="M21 19a4.5 4.5 0 0 0-4-4.4"/></svg>
+      </button>
+      <button class="nav-btn" type="button" title="Calendar">
+        <svg viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4"/></svg>
+      </button>
+      <button class="nav-btn" type="button" title="Alarms">
+        <svg viewBox="0 0 24 24"><path d="M21 15a2 2 0 0 1-2 2H8l-5 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+      </button>
+      <button class="nav-btn" type="button" title="Jobs">
+        <svg viewBox="0 0 24 24"><rect x="4" y="3" width="16" height="18" rx="2"/><path d="M8 8h8M8 12h8M8 16h5"/></svg>
+      </button>
+    </nav>
+    <div class="nav-bottom">
+      <button class="nav-btn" type="button" title="Settings">
+        <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H8a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V8c.3.7 1 1.2 1.7 1.2H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg>
+      </button>
+      <button class="nav-btn" type="button" title="Sign out">
+        <svg viewBox="0 0 24 24"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><path d="M16 17l5-5-5-5"/><path d="M21 12H9"/></svg>
+      </button>
     </div>
-  </div>
-  <div class="headline-right">
-    <div class="live-pill"><span class="dot"></span>Live Simulation</div>
-    <div class="clock-box">
-      <span id="date-str">—</span>
-      <span class="t" id="clock">00:00:00</span>
-    </div>
-    <button class="theme-toggle" id="theme-toggle" type="button" aria-label="Toggle light/dark theme">☾ / ☀</button>
-  </div>
-</header>
+  </aside>
 
-<div class="banner">Proof-of-concept demonstration — figures are <b>simulated</b>, not live plant data · deployment plan available on request</div>
-
-<main>
-
-  <section class="kpis" id="kpis" aria-label="Key metrics"></section>
-
-  <div class="sec-head"><span class="n">01</span><h2>Machine Status</h2><span class="rule"></span></div>
-  <div class="layout">
-    <section class="panel" style="animation-delay:.05s">
-      <div class="panel-head"><h3>Shop Floor</h3><span class="meta" id="machines-meta">updating…</span></div>
-      <div class="machines" id="machines"></div>
-    </section>
-
-    <div style="display:grid;gap:16px">
-      <section class="panel" style="animation-delay:.1s">
-        <div class="panel-head"><h3>Utilities</h3></div>
-        <div id="utilities"></div>
-      </section>
-      <section class="panel" style="animation-delay:.15s">
-        <div class="panel-head"><h3>Active Alarms</h3><span class="meta" id="alarms-count">0 active</span></div>
-        <div class="alarms" id="alarms"></div>
-      </section>
-    </div>
-  </div>
-
-  <div class="sec-head"><span class="n">02</span><h2>Trends &amp; Connectivity</h2><span class="rule"></span></div>
-  <div class="layout">
-    <section class="panel" style="animation-delay:.2s">
-      <div class="panel-head"><h3>Workshop Power Demand</h3><span class="meta">last 60 samples</span></div>
-      <div class="chart-wrap">
-        <div class="chart"><svg id="chart-svg" viewBox="0 0 800 170" preserveAspectRatio="none"></svg></div>
-        <div class="legend">
-          <span><i style="background:var(--amber)"></i>Instantaneous (kW)</span>
-          <span><i style="background:var(--cyan)"></i>Rolling average (kW)</span>
-        </div>
+  <div class="workspace">
+    <header class="topbar">
+      <div class="topbar-left">
+        <button class="icon-btn" type="button" title="Menu" aria-label="Menu">
+          <svg viewBox="0 0 24 24"><path d="M4 7h16M4 12h16M4 17h16"/></svg>
+        </button>
+        <div class="page-title">OEE Dashboard</div>
       </div>
-    </section>
-    <section class="panel" style="animation-delay:.25s">
-      <div class="panel-head"><h3>Data Connections</h3></div>
-      <div id="network"></div>
-    </section>
+      <div class="topbar-right">
+        <button class="chip" type="button" title="Time range">
+          <svg viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4"/></svg>
+          <span id="range-label">17 Aug 2026 – Now</span>
+        </button>
+        <button class="chip" type="button" title="Area">
+          <svg viewBox="0 0 24 24"><circle cx="6" cy="12" r="2"/><circle cx="18" cy="6" r="2"/><circle cx="18" cy="18" r="2"/><path d="M8 12h8M16 8l-8 3M16 16l-8-3"/></svg>
+          <span>Matrix Machine Shop</span>
+          <svg class="caret" viewBox="0 0 24 24"><path d="M6 9l6 6 6-6"/></svg>
+        </button>
+        <button class="icon-btn" id="btn-full" type="button" title="Full screen">
+          <svg viewBox="0 0 24 24"><path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5"/></svg>
+        </button>
+        <button class="icon-btn" id="btn-refresh" type="button" title="Refresh">
+          <svg viewBox="0 0 24 24"><path d="M21 12a9 9 0 1 1-2.6-6.4"/><path d="M21 4v6h-6"/></svg>
+        </button>
+        <button class="icon-btn" id="btn-pause" type="button" title="Pause simulation" aria-pressed="false">
+          <svg id="pause-icon" viewBox="0 0 24 24"><rect x="6" y="5" width="4" height="14"/><rect x="14" y="5" width="4" height="14"/></svg>
+        </button>
+      </div>
+    </header>
+
+    <div class="banner">Proof-of-concept demonstration — figures are <b>simulated</b>, not live plant data</div>
+
+    <main class="content">
+      <div class="formula">
+        <strong>OEE</strong> (Overall Equipment Effectiveness) answers: “Of the time we planned to make parts, how much actually became good product?”
+        &nbsp; Formula: <strong>OEE = Availability × Performance × Quality</strong>
+      </div>
+
+      <section class="kpis" aria-label="OEE metrics">
+        <article class="kpi">
+          <div class="val" id="kpi-avail">—</div>
+          <div class="label">Availability</div>
+          <div class="hint">Share of planned shift time the machines were actually running, not idle or down</div>
+        </article>
+        <article class="kpi">
+          <div class="val" id="kpi-perf">—</div>
+          <div class="label">Performance</div>
+          <div class="hint">How close cycle times are to the expected rate when a machine is running</div>
+        </article>
+        <article class="kpi">
+          <div class="val" id="kpi-qual">—</div>
+          <div class="label">Quality</div>
+          <div class="hint">Good parts as a share of all parts made (scrap and rework count against this)</div>
+        </article>
+        <article class="kpi">
+          <div class="val" id="kpi-oee">—</div>
+          <div class="label">Shop OEE</div>
+          <div class="hint">Availability × Performance × Quality for the whole shop today</div>
+        </article>
+      </section>
+
+      <section class="panel map-panel" style="margin-bottom:16px">
+        <div class="panel-head">Shop floor map</div>
+        <div class="panel-sub">Each badge is that machine’s live OEE. Hover (or tab to) a badge for Availability, Performance, Quality and status.</div>
+        <div class="floor" id="floor-map">
+          <div class="iso" aria-hidden="true">
+            <div class="pad a"></div>
+            <div class="pad b"></div>
+            <div class="pad c"></div>
+            <div class="pad d"></div>
+            <div class="pad e"></div>
+          </div>
+          <button type="button" class="callout c1" data-id="mill">
+            <div class="spark">OEE</div>
+            <div><strong class="map-oee">—</strong> <span class="name">HAAS Mill</span></div>
+            <div class="pop"></div>
+          </button>
+          <button type="button" class="callout c2" data-id="lathe">
+            <div class="spark">OEE</div>
+            <div><strong class="map-oee">—</strong> <span class="name">HAAS Lathe</span></div>
+            <div class="pop"></div>
+          </button>
+          <button type="button" class="callout c3" data-id="press">
+            <div class="spark">OEE</div>
+            <div><strong class="map-oee">—</strong> <span class="name">Press Brake</span></div>
+            <div class="pop"></div>
+          </button>
+          <button type="button" class="callout c4" data-id="laser">
+            <div class="spark">OEE</div>
+            <div><strong class="map-oee">—</strong> <span class="name">Metal Laser</span></div>
+            <div class="pop"></div>
+          </button>
+          <button type="button" class="callout c5" data-id="plas1">
+            <div class="spark">OEE</div>
+            <div><strong class="map-oee">—</strong> <span class="name">Plastic Laser 1</span></div>
+            <div class="pop"></div>
+          </button>
+          <button type="button" class="callout c6" data-id="plas2">
+            <div class="spark">OEE</div>
+            <div><strong class="map-oee">—</strong> <span class="name">Plastic Laser 2</span></div>
+            <div class="pop"></div>
+          </button>
+        </div>
+      </section>
+
+      <section class="mid">
+        <article class="panel">
+          <div class="panel-head">OEE by machine</div>
+          <div class="panel-sub">Purple number is that machine’s OEE. A low score here is dragging shop OEE down — look at Availability / Performance / Quality underneath to see why.</div>
+          <div class="machines" id="machines"></div>
+        </article>
+
+        <article class="panel">
+          <div class="panel-head">Shop OEE this week</div>
+          <div class="panel-sub">Each day is one point. Hover a day to see the three OEE parts. The live simulation updates today (25 Aug) as if the shift is still running.</div>
+          <div class="chart-box">
+            <div class="chart">
+              <svg id="oee-svg" viewBox="0 0 640 250" preserveAspectRatio="none"></svg>
+              <div class="tooltip" id="chart-tip" hidden></div>
+            </div>
+          </div>
+          <div class="legend">
+            <span><i style="background:#BB86FC"></i>Shop OEE</span>
+            <span><i style="background:#f08a24"></i>Availability</span>
+            <span><i style="background:#5fd0d6"></i>Performance</span>
+          </div>
+        </article>
+      </section>
+
+      <section class="panel" id="daily-record">
+        <button class="fold-btn" type="button" id="daily-toggle" aria-expanded="false" aria-controls="daily-body">
+          <div>
+            <div class="panel-head">Daily OEE record</div>
+            <div class="panel-sub">Same numbers as the chart, in table form. Click to expand.</div>
+          </div>
+          <span class="chevron" aria-hidden="true">
+            <svg viewBox="0 0 24 24"><path d="M6 9l6 6 6-6"/></svg>
+          </span>
+        </button>
+        <div class="fold-body" id="daily-body">
+          <div class="panel-sub" style="padding-top:0">Shift achievement is good parts vs the day’s plan.</div>
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>Date</th>
+                  <th>Availability</th>
+                  <th>Performance</th>
+                  <th>Quality</th>
+                  <th>Shop OEE</th>
+                  <th>Shift achievement</th>
+                </tr>
+              </thead>
+              <tbody id="table-body"></tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <footer>
+        <span>Concept dashboard for management review · not connected to live plant equipment</span>
+        <span><a href="README.md">Project README</a> · <a href="https://github.com/hadefuwa/matrix-machineshop">Source on GitHub</a></span>
+      </footer>
+    </main>
   </div>
-
-  <div class="sec-head"><span class="n">03</span><h2>Architecture</h2><span class="rule"></span></div>
-  <section class="panel" style="animation-delay:.3s">
-    <div class="diagram">
-      <svg viewBox="0 0 960 300" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="SCADA data architecture diagram">
-        <defs>
-          <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
-            <path d="M0,0 L10,5 L0,10 z" fill="var(--text-faint)"></path>
-          </marker>
-        </defs>
-        <!-- connecting lines -->
-        <g stroke="var(--line)" stroke-width="1.5" fill="none">
-          <path d="M170,45 H430" marker-end="url(#arrow)"/>
-          <path d="M170,95 H430" marker-end="url(#arrow)"/>
-          <path d="M170,145 H430" marker-end="url(#arrow)"/>
-          <path d="M170,195 H340 V225" marker-end="url(#arrow)"/>
-          <path d="M580,120 H700" marker-end="url(#arrow)"/>
-          <path d="M340,255 H580" marker-end="url(#arrow)"/>
-        </g>
-        <!-- left: machines -->
-        <g font-family="JetBrains Mono, monospace" font-size="12" fill="var(--text)">
-          <rect x="20" y="26" width="150" height="38" rx="6" fill="var(--panel-2)" stroke="var(--green-dim)"/>
-          <text x="95" y="49" text-anchor="middle">HAAS Mill / Lathe</text>
-          <rect x="20" y="76" width="150" height="38" rx="6" fill="var(--panel-2)" stroke="var(--green-dim)"/>
-          <text x="95" y="99" text-anchor="middle">Press Brake (ESA)</text>
-          <rect x="20" y="126" width="150" height="38" rx="6" fill="var(--panel-2)" stroke="var(--green-dim)"/>
-          <text x="95" y="149" text-anchor="middle">Boxford Lasers</text>
-          <rect x="20" y="176" width="150" height="38" rx="6" fill="var(--panel-2)" stroke="var(--amber-dim)"/>
-          <text x="95" y="199" text-anchor="middle">Utilities / Sensors</text>
-        </g>
-        <!-- center: PLC -->
-        <g font-family="Oswald, sans-serif" font-size="13" fill="var(--text)">
-          <rect x="270" y="205" width="140" height="50" rx="6" fill="var(--panel-2)" stroke="var(--amber)" stroke-width="1.5"/>
-          <text x="340" y="226" text-anchor="middle" font-weight="600">SIEMENS</text>
-          <text x="340" y="244" text-anchor="middle" font-weight="600">S7-1200</text>
-        </g>
-        <!-- right: PC/SCADA -->
-        <g font-family="Oswald, sans-serif" font-size="13" fill="var(--text)">
-          <rect x="430" y="95" width="150" height="50" rx="6" fill="var(--panel-2)" stroke="var(--cyan)" stroke-width="1.5"/>
-          <text x="505" y="116" text-anchor="middle" font-weight="600">SCADA PC</text>
-          <text x="505" y="134" text-anchor="middle" font-size="10.5" fill="var(--text-dim)">Server / Historian</text>
-        </g>
-        <g font-family="Oswald, sans-serif" font-size="13" fill="var(--text)">
-          <rect x="700" y="95" width="150" height="50" rx="6" fill="var(--panel-2)" stroke="var(--blue)" stroke-width="1.5"/>
-          <text x="775" y="116" text-anchor="middle" font-weight="600">Dashboard</text>
-          <text x="775" y="134" text-anchor="middle" font-size="10.5" fill="var(--text-dim)">Web / Shop Display</text>
-        </g>
-        <!-- labels on lines -->
-        <g font-family="JetBrains Mono, monospace" font-size="9.5" fill="var(--text-faint)">
-          <text x="300" y="39">Ethernet / MTConnect</text>
-          <text x="300" y="89">Modbus TCP</text>
-          <text x="300" y="139">Ethernet / DSP</text>
-          <text x="200" y="215">24V I/O · 4-20mA</text>
-          <text x="595" y="114">OPC UA</text>
-          <text x="410" y="249">HTTPS / WebSocket</text>
-        </g>
-      </svg>
-      <div class="diagram-note">Intelligent networked equipment connects directly to the SCADA PC; legacy/auxiliary equipment feeds through the S7-1200 as a data-acquisition concentrator.</div>
-    </div>
-  </section>
-
-</main>
-
-<footer>
-  <span>Concept dashboard for management review · not connected to live plant equipment</span>
-  <span>Matrix TSL — internal proof of concept</span>
-</footer>
+</div>
 
 <script>
 (function(){
   "use strict";
 
-  /* ---------- theme toggle ---------- */
-  var root = document.documentElement;
-  var saved = null;
-  try { saved = localStorage.getItem('mtsl-theme'); } catch(e){}
-  if(saved) root.setAttribute('data-theme', saved);
-  document.getElementById('theme-toggle').addEventListener('click', function(){
-    var current = root.getAttribute('data-theme');
-    var next = current === 'dark' ? 'light' : (current === 'light' ? 'dark' : (matchMedia('(prefers-color-scheme: dark)').matches ? 'light' : 'dark'));
-    root.setAttribute('data-theme', next);
-    try { localStorage.setItem('mtsl-theme', next); } catch(e){}
-  });
+  var paused = false;
+  var hoverIndex = 8;
 
-  /* ---------- clock ---------- */
-  function pad(n){return n<10?'0'+n:''+n}
-  function tickClock(){
-    var d = new Date();
-    document.getElementById('clock').textContent = pad(d.getHours())+':'+pad(d.getMinutes())+':'+pad(d.getSeconds());
-    document.getElementById('date-str').textContent = d.toDateString();
-  }
-  tickClock(); setInterval(tickClock, 1000);
-
-  /* ---------- state ---------- */
   var machines = [
-    {name:'HAAS CNC Mill', type:'Vertical machining centre', status:'RUNNING', program:'OP-1842', extra:'Cycle 03:42', power:8.6, load:78},
-    {name:'HAAS CNC Lathe', type:'ST-series turning centre', status:'IDLE', program:'SHAFT-08', extra:'42 parts', power:2.1, load:40},
-    {name:'Morgan Rushworth Press Brake', type:'PBSL CNC hydraulic', status:'RUNNING', program:'BRKT-19', extra:'126 bends', power:4.4, load:63},
-    {name:'Boxford Metal Laser', type:'Fibre laser cutting cell', status:'RUNNING', program:'PANEL-07', extra:'Chiller 21.8°C', power:6.9, load:84},
-    {name:'Boxford Plastic Laser 1', type:'CO2 laser cutter', status:'WARNING', program:'Filter loading', extra:'Runtime 6.2h', power:1.7, load:56},
-    {name:'Boxford Plastic Laser 2', type:'CO2 laser cutter', status:'RUNNING', program:'LABEL-22', extra:'Runtime 3.7h', power:1.5, load:72},
+    { id:"mill", name:"HAAS CNC Mill", type:"Vertical machining centre", status:"RUNNING", avail:86, perf:94, qual:98 },
+    { id:"lathe", name:"HAAS CNC Lathe", type:"ST-series turning centre", status:"IDLE", avail:61, perf:88, qual:99 },
+    { id:"press", name:"Morgan Rushworth Press Brake", type:"PBSL CNC hydraulic", status:"RUNNING", avail:79, perf:91, qual:97 },
+    { id:"laser", name:"Boxford Metal Laser", type:"Fibre laser cutting cell", status:"RUNNING", avail:88, perf:93, qual:96 },
+    { id:"plas1", name:"Boxford Plastic Laser 1", type:"CO2 laser cutter", status:"WARNING", avail:70, perf:85, qual:94 },
+    { id:"plas2", name:"Boxford Plastic Laser 2", type:"CO2 laser cutter", status:"RUNNING", avail:82, perf:90, qual:98 }
   ];
 
-  var utilities = [
-    {name:'Atlas Copco G4FF', val:'7.4 bar', sub:'Compressor loaded · 3.1 kW', cls:''},
-    {name:'CW-5200 Chiller', val:'21.8°C', sub:'Pump running · Normal', cls:''},
-    {name:'HAAS Extraction (CM500)', val:'Healthy', sub:'Airflow OK', cls:'good'},
-    {name:'Shop Extraction Filter', val:'82%', sub:'Filter life remaining', cls:''},
-  ];
+  var labels = ["17 Aug","18 Aug","19 Aug","20 Aug","21 Aug","22 Aug","23 Aug","24 Aug","25 Aug"];
+  var dates = ["2026-08-17","2026-08-18","2026-08-19","2026-08-20","2026-08-21","2026-08-22","2026-08-23","2026-08-24","2026-08-25"];
+  var historyAvail = [];
+  var historyPerf = [];
+  var historyQual = [];
+  var historyOee = [];
+  var historyShift = [];
 
-  var alarms = [
-    {level:'amber', text:'Plastic Laser 1 filter loading high', sub:'Extraction differential pressure above warning limit', mins:35},
-    {level:'amber', text:'Compressor service approaching', sub:'42 operating hours remaining', mins:190},
-  ];
-
-  var network = [
-    {name:'HAAS Mill', proto:'Ethernet / MTConnect'},
-    {name:'HAAS Lathe', proto:'Ethernet / MDC'},
-    {name:'Press Brake', proto:'ESA LAN-PC'},
-    {name:'S7-1200 DAQ PLC', proto:'OPC UA'},
-    {name:'Energy Meters', proto:'Modbus TCP/RTU'},
-    {name:'Legacy I/O', proto:'24V / 4-20mA'},
-  ];
-
-  var STATUS_ORDER = {RUNNING:0, WARNING:1, IDLE:2, FAULT:3, OFFLINE:4};
-
-  /* ---------- render: machines ---------- */
-  var machinesEl = document.getElementById('machines');
-  function renderMachines(){
-    machinesEl.innerHTML = machines.map(function(m){
-      return '<div class="machine">'
-        +'<div class="m-top"><div><h4>'+m.name+'</h4><div class="m-type">'+m.type+'</div></div>'
-        +'<span class="status-tag '+m.status+'">'+m.status+'</span></div>'
-        +'<div class="m-stats">'
-          +'<div class="m-stat"><span>Program</span><strong>'+m.program+'</strong></div>'
-          +'<div class="m-stat"><span>Info</span><strong>'+m.extra+'</strong></div>'
-          +'<div class="m-stat"><span>Power</span><strong>'+m.power.toFixed(1)+' kW</strong></div>'
-        +'</div>'
-        +'<div class="m-bar"><i style="width:'+m.load+'%"></i></div>'
-      +'</div>';
-    }).join('');
+  function jitter(value, amount, min, max){
+    var next = value + (Math.random() - 0.5) * amount;
+    if(next < min) next = min;
+    if(next > max) next = max;
+    return next;
   }
 
-  /* ---------- render: utilities ---------- */
-  var utilEl = document.getElementById('utilities');
-  function renderUtilities(){
-    utilEl.innerHTML = utilities.map(function(u){
-      return '<div class="util"><div class="util-line"><div class="util-name">'+u.name+'</div>'
-        +'<div class="util-val" style="'+(u.cls==='good'?'color:var(--green)':'')+'">'+u.val+'</div></div>'
-        +'<div class="util-sub">'+u.sub+'</div></div>';
-    }).join('');
+  function oeeOf(avail, perf, qual){
+    return (avail / 100) * (perf / 100) * (qual / 100) * 100;
   }
 
-  /* ---------- render: alarms ---------- */
-  var alarmsEl = document.getElementById('alarms');
-  function fmtAgo(mins){
-    if(mins < 60) return mins+'m ago';
-    return Math.floor(mins/60)+'h '+(mins%60)+'m ago';
+  function pct(n){
+    return n.toFixed(1) + "%";
   }
-  function renderAlarms(){
-    document.getElementById('alarms-count').textContent = alarms.length + (alarms.length===1?' active':' active');
-    if(!alarms.length){
-      alarmsEl.innerHTML = '<div class="alarm"><div></div><div class="a-main" style="color:var(--green)">No active alarms</div><div></div></div>';
-      return;
+
+  function shopAverages(){
+    var avail = 0;
+    var perf = 0;
+    var qual = 0;
+    var i;
+    for(i = 0; i < machines.length; i++){
+      avail = avail + machines[i].avail;
+      perf = perf + machines[i].perf;
+      qual = qual + machines[i].qual;
     }
-    alarmsEl.innerHTML = alarms.map(function(a){
-      return '<div class="alarm"><div class="a-dot '+a.level+'"></div>'
-        +'<div class="a-main">'+a.text+'<small>'+a.sub+'</small></div>'
-        +'<div class="a-time">'+fmtAgo(a.mins)+'</div></div>';
-    }).join('');
+    avail = avail / machines.length;
+    perf = perf / machines.length;
+    qual = qual / machines.length;
+    return {
+      avail: avail,
+      perf: perf,
+      qual: qual,
+      oee: oeeOf(avail, perf, qual)
+    };
   }
 
-  /* ---------- render: network ---------- */
-  var netEl = document.getElementById('network');
-  netEl.innerHTML = network.map(function(n){
-    return '<div class="net-row"><span>'+n.name+'</span><span class="proto">'+n.proto+'</span></div>';
-  }).join('');
+  function makeHistory(){
+    historyAvail = [];
+    historyPerf = [];
+    historyQual = [];
+    historyOee = [];
+    historyShift = [];
+    var i;
+    for(i = 0; i < labels.length; i++){
+      var avail = 74 + Math.sin(i / 1.7) * 8 + Math.random() * 3;
+      var perf = 90 + Math.sin(i / 2.1) * 4 + Math.random() * 2;
+      var qual = 96 + Math.sin(i / 2.4) * 1.5 + Math.random() * 1;
+      historyAvail.push(avail);
+      historyPerf.push(perf);
+      historyQual.push(qual);
+      historyOee.push(oeeOf(avail, perf, qual));
+      historyShift.push(92 + Math.sin(i / 1.5) * 8 + Math.random() * 4);
+    }
+  }
 
-  /* ---------- render: KPIs ---------- */
-  var kpiEl = document.getElementById('kpis');
+  function syncTodayFromMachines(){
+    var shop = shopAverages();
+    var last = historyAvail.length - 1;
+    historyAvail[last] = shop.avail;
+    historyPerf[last] = shop.perf;
+    historyQual[last] = shop.qual;
+    historyOee[last] = shop.oee;
+    historyShift[last] = 88 + (shop.oee / 100) * 20;
+  }
+
   function renderKpis(){
-    var running = machines.filter(function(m){return m.status==='RUNNING'}).length;
-    var totalPower = machines.reduce(function(s,m){return s+m.power},0);
-    var util = Math.round(machines.reduce(function(s,m){return s+m.load},0)/machines.length);
-    var kpis = [
-      {label:'Machines Running', val: running+' / '+machines.length, sub: Math.round(running/machines.length*100)+'% active', cls:'good'},
-      {label:'Shop Utilisation', val: util+'%', sub:'Today', cls:''},
-      {label:'Power Demand', val: totalPower.toFixed(1)+' kW', sub:'Workshop total', cls:''},
-      {label:'Air Pressure', val:'7.4 bar', sub:'Atlas Copco G4FF', cls:''},
-      {label:'Active Alarms', val: alarms.length, sub: alarms.length ? '0 critical' : 'All clear', cls: alarms.length ? 'warn':'good'},
-    ];
-    kpiEl.innerHTML = kpis.map(function(k,i){
-      return '<div class="kpi '+k.cls+'" style="animation-delay:'+(i*.05)+'s">'
-        +'<div class="label">'+k.label+'</div><div class="val">'+k.val+'</div><div class="sub">'+k.sub+'</div></div>';
-    }).join('');
+    var shop = shopAverages();
+    document.getElementById("kpi-avail").textContent = pct(shop.avail);
+    document.getElementById("kpi-perf").textContent = pct(shop.perf);
+    document.getElementById("kpi-qual").textContent = pct(shop.qual);
+    document.getElementById("kpi-oee").textContent = pct(shop.oee);
   }
 
-  /* ---------- power chart ---------- */
-  var history = [];
-  for(var i=0;i<60;i++){ history.push(26 + Math.sin(i/6)*6 + Math.random()*3); }
-  var chartSvg = document.getElementById('chart-svg');
+  function renderMachines(){
+    var html = "";
+    var i;
+    for(i = 0; i < machines.length; i++){
+      var m = machines[i];
+      var oee = oeeOf(m.avail, m.perf, m.qual);
+      html = html
+        + '<article class="m-card">'
+        + '<div class="m-top"><div><h3>' + m.name + '</h3><div class="m-type">' + m.type + '</div></div>'
+        + '<span class="status ' + m.status + '">' + m.status + '</span></div>'
+        + '<div class="m-oee">' + pct(oee) + '<span>OEE</span></div>'
+        + '<div class="mini">'
+        + '<div><span>Avail.</span><strong>' + pct(m.avail) + '</strong></div>'
+        + '<div><span>Perf.</span><strong>' + pct(m.perf) + '</strong></div>'
+        + '<div><span>Qual.</span><strong>' + pct(m.qual) + '</strong></div>'
+        + '</div></article>';
+    }
+    document.getElementById("machines").innerHTML = html;
+  }
+
+  function renderMap(){
+    var i;
+    for(i = 0; i < machines.length; i++){
+      var m = machines[i];
+      var oee = oeeOf(m.avail, m.perf, m.qual);
+      var btn = document.querySelector('.callout[data-id="' + m.id + '"]');
+      if(!btn) continue;
+      btn.querySelector(".map-oee").textContent = pct(oee);
+      btn.querySelector(".pop").innerHTML =
+        "<h4>" + m.name + "</h4>"
+        + '<div class="pop-type">' + m.type + " · " + m.status + "</div>"
+        + '<div class="pop-oee">' + pct(oee) + " OEE</div>"
+        + '<div class="pop-row"><span>Availability</span><strong>' + pct(m.avail) + "</strong></div>"
+        + '<div class="pop-row"><span>Performance</span><strong>' + pct(m.perf) + "</strong></div>"
+        + '<div class="pop-row"><span>Quality</span><strong>' + pct(m.qual) + "</strong></div>";
+    }
+  }
+
+  function renderTable(){
+    var html = "";
+    var i;
+    for(i = 0; i < labels.length; i++){
+      html = html
+        + "<tr>"
+        + "<td><a href='#'>" + dates[i] + " 08:00</a></td>"
+        + "<td>" + pct(historyAvail[i]) + "</td>"
+        + "<td>" + pct(historyPerf[i]) + "</td>"
+        + "<td>" + pct(historyQual[i]) + "</td>"
+        + "<td>" + pct(historyOee[i]) + "</td>"
+        + "<td>" + Math.round(historyShift[i]) + "%</td>"
+        + "</tr>";
+    }
+    document.getElementById("table-body").innerHTML = html;
+  }
+
+  function linePoints(values, width, height, padLeft, padRight, padTop, padBottom){
+    var innerW = width - padLeft - padRight;
+    var innerH = height - padTop - padBottom;
+    var parts = [];
+    var i;
+    for(i = 0; i < values.length; i++){
+      var x = padLeft + (i / (values.length - 1)) * innerW;
+      var y = padTop + (1 - values[i] / 100) * innerH;
+      parts.push(x.toFixed(1) + "," + y.toFixed(1));
+    }
+    return parts.join(" ");
+  }
+
+  function xAt(index, width, padLeft, padRight, count){
+    return padLeft + (index / (count - 1)) * (width - padLeft - padRight);
+  }
+
+  function yAt(value, height, padTop, padBottom){
+    return padTop + (1 - value / 100) * (height - padTop - padBottom);
+  }
+
+  function showTip(index, width, height, padLeft, padRight, padTop, padBottom){
+    var tip = document.getElementById("chart-tip");
+    var x = xAt(index, width, padLeft, padRight, labels.length);
+    var y = yAt(historyOee[index], height, padTop, padBottom);
+    tip.hidden = false;
+    tip.innerHTML =
+      "<b>" + labels[index] + "</b><br>"
+      + "OEE " + pct(historyOee[index]) + "<br>"
+      + "Availability " + pct(historyAvail[index]) + "<br>"
+      + "Performance " + pct(historyPerf[index]) + "<br>"
+      + "Quality " + pct(historyQual[index]);
+    tip.style.left = (x / width * 100) + "%";
+    tip.style.top = (y / height * 100) + "%";
+  }
 
   function renderChart(){
-    var w = 800, h = 170, n = history.length;
-    var max = Math.max.apply(null, history) + 4;
-    var min = Math.min.apply(null, history) - 4;
-    function pt(i,v){
-      var x = (i/(n-1))*w;
-      var y = h - ((v-min)/(max-min))*h;
-      return x+','+y.toFixed(1);
+    var width = 640;
+    var height = 250;
+    var padLeft = 36;
+    var padRight = 12;
+    var padTop = 16;
+    var padBottom = 32;
+
+    var oeePts = linePoints(historyOee, width, height, padLeft, padRight, padTop, padBottom);
+    var availPts = linePoints(historyAvail, width, height, padLeft, padRight, padTop, padBottom);
+    var perfPts = linePoints(historyPerf, width, height, padLeft, padRight, padTop, padBottom);
+
+    var yLabels = "";
+    var ticks = [0, 20, 40, 60, 80, 100];
+    var t;
+    for(t = 0; t < ticks.length; t++){
+      var y = yAt(ticks[t], height, padTop, padBottom);
+      yLabels = yLabels + '<text class="axis" x="4" y="' + (y + 4) + '">' + ticks[t] + '</text>';
     }
-    var pts = history.map(function(v,i){return pt(i,v)}).join(' ');
 
-    // rolling average
-    var avg = history.map(function(_,i){
-      var s = Math.max(0,i-7), e = i+1;
-      var slice = history.slice(s,e);
-      return slice.reduce(function(a,b){return a+b},0)/slice.length;
-    });
-    var avgPts = avg.map(function(v,i){return pt(i,v)}).join(' ');
+    var xLabels = "";
+    var i;
+    for(i = 0; i < labels.length; i++){
+      var x = xAt(i, width, padLeft, padRight, labels.length);
+      xLabels = xLabels + '<text class="axis" x="' + x + '" y="' + (height - 8) + '" text-anchor="middle">' + labels[i] + '</text>';
+    }
 
-    var fillPts = pts+' '+w+','+h+' 0,'+h;
+    var hitDots = "";
+    for(i = 0; i < labels.length; i++){
+      var hx = xAt(i, width, padLeft, padRight, labels.length);
+      hitDots = hitDots
+        + '<circle class="hit" data-index="' + i + '" cx="' + hx.toFixed(1) + '" cy="125" r="18" fill="transparent"></circle>';
+    }
 
-    chartSvg.innerHTML =
-      '<polygon points="'+fillPts+'" fill="url(#g1)" opacity="0.35"></polygon>'
-      +'<defs><linearGradient id="g1" x1="0" y1="0" x2="0" y2="1">'
-      +'<stop offset="0%" stop-color="var(--amber)" stop-opacity="0.5"/>'
-      +'<stop offset="100%" stop-color="var(--amber)" stop-opacity="0"/></linearGradient></defs>'
-      +'<polyline points="'+avgPts+'" fill="none" stroke="var(--cyan)" stroke-width="2" stroke-dasharray="5 4" opacity="0.85"></polyline>'
-      +'<polyline points="'+pts+'" fill="none" stroke="var(--amber)" stroke-width="2.5"></polyline>';
+    var markX = xAt(hoverIndex, width, padLeft, padRight, labels.length);
+    var markY = yAt(historyOee[hoverIndex], height, padTop, padBottom);
+
+    document.getElementById("oee-svg").innerHTML =
+      yLabels + xLabels
+      + '<polyline points="' + availPts + '" fill="none" stroke="#f08a24" stroke-width="2.2"></polyline>'
+      + '<polyline points="' + perfPts + '" fill="none" stroke="#5fd0d6" stroke-width="2.2"></polyline>'
+      + '<polyline points="' + oeePts + '" fill="none" stroke="#BB86FC" stroke-width="2.8"></polyline>'
+      + '<circle cx="' + markX.toFixed(1) + '" cy="' + markY.toFixed(1) + '" r="4.5" fill="#BB86FC"></circle>'
+      + hitDots;
+
+    showTip(hoverIndex, width, height, padLeft, padRight, padTop, padBottom);
   }
 
-  /* ---------- simulation tick ---------- */
-  function jitter(v, amt, min, max){
-    var nv = v + (Math.random()-0.5)*amt;
-    return Math.max(min, Math.min(max, nv));
-  }
-
-  var tick = 0;
   function simulate(){
-    tick++;
-    machines.forEach(function(m){
-      if(m.status === 'RUNNING'){
-        m.power = jitter(m.power, 0.6, 0.8, 12);
-        m.load = jitter(m.load, 4, 15, 98);
-      } else if(m.status === 'IDLE'){
-        m.power = jitter(m.power, 0.15, 0.5, 3);
-        m.load = jitter(m.load, 2, 5, 45);
-      } else if(m.status === 'WARNING'){
-        m.power = jitter(m.power, 0.3, 0.8, 4);
-        m.load = jitter(m.load, 3, 20, 70);
+    if(paused) return;
+
+    var i;
+    for(i = 0; i < machines.length; i++){
+      var m = machines[i];
+      if(m.status === "RUNNING"){
+        m.avail = jitter(m.avail, 1.6, 72, 94);
+        m.perf = jitter(m.perf, 1.2, 86, 98);
+        m.qual = jitter(m.qual, 0.6, 94, 99.5);
+      } else if(m.status === "IDLE"){
+        m.avail = jitter(m.avail, 1.4, 48, 70);
+        m.perf = jitter(m.perf, 0.8, 80, 92);
+        m.qual = jitter(m.qual, 0.3, 97, 99.8);
+      } else {
+        m.avail = jitter(m.avail, 1.8, 55, 78);
+        m.perf = jitter(m.perf, 1.4, 78, 90);
+        m.qual = jitter(m.qual, 0.8, 90, 97);
       }
-      // rare state flip for realism
-      if(Math.random() < 0.01 && m.status === 'IDLE') m.status = 'RUNNING';
-      else if(Math.random() < 0.006 && m.status === 'RUNNING') m.status = 'IDLE';
-    });
+    }
 
-    var totalPower = machines.reduce(function(s,m){return s+m.power},0);
-    history.push(totalPower);
-    if(history.length > 60) history.shift();
+    if(Math.random() < 0.02 && machines[1].status === "IDLE") machines[1].status = "RUNNING";
+    else if(Math.random() < 0.015 && machines[1].status === "RUNNING") machines[1].status = "IDLE";
 
-    document.getElementById('machines-meta').textContent = 'updated '+tick*2+'s ago'.replace(tick*2+'s ago', 'just now');
-    document.getElementById('machines-meta').textContent = 'live · tick #'+tick;
-
-    renderMachines();
+    syncTodayFromMachines();
     renderKpis();
+    renderMachines();
+    renderMap();
+    renderTable();
     renderChart();
   }
 
-  renderMachines();
-  renderUtilities();
-  renderAlarms();
-  renderKpis();
-  renderChart();
+  document.getElementById("daily-toggle").addEventListener("click", function(){
+    var panel = document.getElementById("daily-record");
+    var isOpen = panel.classList.contains("open");
+    if(isOpen){
+      panel.classList.remove("open");
+      this.setAttribute("aria-expanded", "false");
+    } else {
+      panel.classList.add("open");
+      this.setAttribute("aria-expanded", "true");
+    }
+  });
 
+  document.getElementById("oee-svg").addEventListener("mousemove", function(event){
+    var svg = event.currentTarget;
+    var box = svg.getBoundingClientRect();
+    var x = (event.clientX - box.left) / box.width * 640;
+    var padLeft = 36;
+    var padRight = 12;
+    var innerW = 640 - padLeft - padRight;
+    var ratio = (x - padLeft) / innerW;
+    if(ratio < 0) ratio = 0;
+    if(ratio > 1) ratio = 1;
+    hoverIndex = Math.round(ratio * (labels.length - 1));
+    renderChart();
+  });
+
+  document.getElementById("btn-pause").addEventListener("click", function(){
+    paused = !paused;
+    this.setAttribute("aria-pressed", paused ? "true" : "false");
+    this.title = paused ? "Resume simulation" : "Pause simulation";
+    var icon = document.getElementById("pause-icon");
+    if(paused){
+      icon.innerHTML = '<polygon points="8,5 19,12 8,19"/>';
+    } else {
+      icon.innerHTML = '<rect x="6" y="5" width="4" height="14"/><rect x="14" y="5" width="4" height="14"/>';
+    }
+  });
+
+  document.getElementById("btn-refresh").addEventListener("click", function(){
+    makeHistory();
+    syncTodayFromMachines();
+    hoverIndex = 8;
+    renderKpis();
+    renderMachines();
+    renderMap();
+    renderTable();
+    renderChart();
+  });
+
+  document.getElementById("btn-full").addEventListener("click", function(){
+    if(!document.fullscreenElement){
+      document.documentElement.requestFullscreen();
+    } else {
+      document.exitFullscreen();
+    }
+  });
+
+  makeHistory();
+  syncTodayFromMachines();
+  renderKpis();
+  renderMachines();
+  renderMap();
+  renderTable();
+  renderChart();
   setInterval(simulate, 2200);
 
 })();
