@@ -310,7 +310,38 @@
   }
   footer a{color:#bbb}
 
+  .page{display:none}
+  .page.active{display:block}
+  .report-grid{display:grid;grid-template-columns:1.2fr 1fr;gap:16px;margin-bottom:16px}
+  .report-list{display:grid;gap:10px;padding:0 16px 16px}
+  .report-item{
+    display:flex;justify-content:space-between;align-items:center;gap:12px;
+    background:#161616;border:1px solid #2b2b2b;border-radius:10px;
+    padding:14px 16px;
+  }
+  .report-item h3{font-size:14px;font-weight:600}
+  .report-item p{font-size:12px;color:var(--muted);margin-top:4px}
+  .report-actions{display:flex;gap:8px;flex:none}
+  .report-btn{
+    border:1px solid var(--line);background:#222;color:#fff;
+    border-radius:8px;padding:7px 10px;font-size:12px;
+  }
+  .report-btn:hover{border-color:var(--green);color:var(--green)}
+  .insight{padding:4px 18px 16px}
+  .insight-row{
+    display:grid;grid-template-columns:90px 1fr;gap:10px;
+    padding:10px 0;border-bottom:1px solid #262626;font-size:13px;
+  }
+  .insight-row:last-child{border-bottom:0}
+  .insight-tag{color:var(--green);font-weight:600;font-size:12px}
+  .toast{
+    display:none;position:fixed;bottom:24px;right:24px;z-index:20;
+    background:#1a1a1a;border:1px solid var(--green);color:#fff;
+    border-radius:10px;padding:12px 16px;font-size:13px;
+  }
+  .toast.show{display:block}
   @media (max-width:1100px){
+    .report-grid{grid-template-columns:1fr}
     .kpis{grid-template-columns:repeat(2,1fr)}
     .mid{grid-template-columns:1fr}
     .kpi .val{font-size:34px}
@@ -331,11 +362,11 @@
   <aside class="sidebar" aria-label="Main navigation">
     <div class="logo" title="Matrix TSL">M</div>
     <nav class="nav-icons">
-      <button class="nav-btn active" type="button" title="Dashboard" aria-current="page">
+      <button class="nav-btn active" type="button" data-page="dashboard" title="Dashboard" aria-current="page">
         <svg viewBox="0 0 24 24"><path d="M3 10.5 12 3l9 7.5V20a1 1 0 0 1-1 1h-5v-7H9v7H4a1 1 0 0 1-1-1z"/></svg>
       </button>
-      <button class="nav-btn" type="button" title="Machines">
-        <svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
+      <button class="nav-btn" type="button" data-page="reports" title="Reports">
+        <svg viewBox="0 0 24 24"><path d="M6 3h9l5 5v13a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2z"/><path d="M15 3v6h6M8 13h8M8 17h5"/></svg>
       </button>
       <button class="nav-btn" type="button" title="People">
         <svg viewBox="0 0 24 24"><circle cx="9" cy="8" r="3"/><path d="M3 19a6 6 0 0 1 12 0"/><circle cx="17" cy="9" r="2.2"/><path d="M21 19a4.5 4.5 0 0 0-4-4.4"/></svg>
@@ -366,7 +397,7 @@
         <button class="icon-btn" type="button" title="Menu" aria-label="Menu">
           <svg viewBox="0 0 24 24"><path d="M4 7h16M4 12h16M4 17h16"/></svg>
         </button>
-        <div class="page-title">OEE Dashboard</div>
+        <div class="page-title" id="page-title">OEE Dashboard</div>
       </div>
       <div class="topbar-right">
         <button class="chip" type="button" title="Time range">
@@ -393,6 +424,7 @@
     <div class="banner">Proof-of-concept demonstration — figures are <b>simulated</b>, not live plant data</div>
 
     <main class="content">
+      <div class="page active" id="page-dashboard">
       <div class="formula">
         <strong>OEE</strong> (Overall Equipment Effectiveness) answers: “Of the time we planned to make parts, how much actually became good product?”
         &nbsp; Formula: <strong>OEE = Availability × Performance × Quality</strong>
@@ -516,6 +548,158 @@
           </div>
         </div>
       </section>
+      </div>
+
+      <div class="page" id="page-reports">
+        <div class="formula">
+          Management reports for the machine shop. These packs are <strong>sample outputs</strong> so you can see what a weekly review would look like.
+        </div>
+
+        <section class="kpis" aria-label="Weekly report headline">
+          <article class="kpi">
+            <div class="val">68.4%</div>
+            <div class="label">Week shop OEE</div>
+            <div class="hint">18–24 Aug · vs 71.2% the week before</div>
+          </article>
+          <article class="kpi">
+            <div class="val">41.2h</div>
+            <div class="label">Lost time</div>
+            <div class="hint">Unplanned downtime across six machines</div>
+          </article>
+          <article class="kpi">
+            <div class="val">94%</div>
+            <div class="label">Plan hit</div>
+            <div class="hint">Good parts vs the week’s production plan</div>
+          </article>
+          <article class="kpi">
+            <div class="val">2</div>
+            <div class="label">Machines off</div>
+            <div class="hint">Metal Laser and Plastic Laser 1 need attention</div>
+          </article>
+        </section>
+
+        <section class="report-grid">
+          <article class="panel">
+            <div class="panel-head">Report pack</div>
+            <div class="panel-sub">Dummy files a manager would open in a Monday review. Download is simulated.</div>
+            <div class="report-list">
+              <div class="report-item">
+                <div>
+                  <h3>Weekly OEE pack</h3>
+                  <p>18–24 Aug 2026 · PDF · 6 pages</p>
+                </div>
+                <div class="report-actions">
+                  <button class="report-btn" type="button" data-fake="Weekly OEE pack">View</button>
+                  <button class="report-btn" type="button" data-fake="Weekly OEE pack">Export PDF</button>
+                </div>
+              </div>
+              <div class="report-item">
+                <div>
+                  <h3>Shift comparison</h3>
+                  <p>Days vs nights · 18–24 Aug 2026 · XLSX</p>
+                </div>
+                <div class="report-actions">
+                  <button class="report-btn" type="button" data-fake="Shift comparison">View</button>
+                  <button class="report-btn" type="button" data-fake="Shift comparison">Export Excel</button>
+                </div>
+              </div>
+              <div class="report-item">
+                <div>
+                  <h3>Lost-time summary</h3>
+                  <p>Idle, faults and waiting for operator · PDF</p>
+                </div>
+                <div class="report-actions">
+                  <button class="report-btn" type="button" data-fake="Lost-time summary">View</button>
+                  <button class="report-btn" type="button" data-fake="Lost-time summary">Export PDF</button>
+                </div>
+              </div>
+              <div class="report-item">
+                <div>
+                  <h3>Machine ranking</h3>
+                  <p>Best / worst OEE for the week · PDF</p>
+                </div>
+                <div class="report-actions">
+                  <button class="report-btn" type="button" data-fake="Machine ranking">View</button>
+                  <button class="report-btn" type="button" data-fake="Machine ranking">Export PDF</button>
+                </div>
+              </div>
+            </div>
+          </article>
+
+          <article class="panel">
+            <div class="panel-head">What to raise this week</div>
+            <div class="panel-sub">Short notes for the production meeting. Sample wording only.</div>
+            <div class="insight">
+              <div class="insight-row"><div class="insight-tag">Critical</div><div>Boxford Metal Laser OEE is 5.0% and last powered 24 Aug 16:22. Treat as off until a cause is logged.</div></div>
+              <div class="insight-row"><div class="insight-tag">Action</div><div>Press brake OEE is 40%. Availability is the weak part — check waiting for setup and operator cover.</div></div>
+              <div class="insight-row"><div class="insight-tag">Watch</div><div>HAAS Lathe spent a large share of the shift Idle. Confirm whether this is job gap or waiting for inspection.</div></div>
+              <div class="insight-row"><div class="insight-tag">On track</div><div>HAAS Mill and Plastic Laser 2 stayed Running for most planned time. Keep those jobs on those cells.</div></div>
+            </div>
+          </article>
+        </section>
+
+        <section class="panel chart-row">
+          <div class="panel-head">Dummy weekly machine ranking</div>
+          <div class="panel-sub">Same story as the live dashboard, frozen as a management print-out.</div>
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>Machine</th>
+                  <th>Status</th>
+                  <th>Week OEE</th>
+                  <th>Lost hours</th>
+                  <th>Manager note</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td>HAAS CNC Mill</td>
+                  <td>Running</td>
+                  <td>79.1%</td>
+                  <td>3.4 h</td>
+                  <td>Best cell this week</td>
+                </tr>
+                <tr>
+                  <td>Boxford Plastic Laser 2</td>
+                  <td>Running</td>
+                  <td>72.4%</td>
+                  <td>4.1 h</td>
+                  <td>Stable night shift</td>
+                </tr>
+                <tr>
+                  <td>HAAS CNC Lathe</td>
+                  <td>Idle</td>
+                  <td>53.2%</td>
+                  <td>9.6 h</td>
+                  <td>Long idle between jobs</td>
+                </tr>
+                <tr>
+                  <td>Boxford Plastic Laser 1</td>
+                  <td>Off</td>
+                  <td>48.8%</td>
+                  <td>11.2 h</td>
+                  <td>Filter / extraction stop</td>
+                </tr>
+                <tr>
+                  <td>Morgan Rushworth Press Brake</td>
+                  <td>Running</td>
+                  <td>40.0%</td>
+                  <td>14.8 h</td>
+                  <td>Availability dragging OEE</td>
+                </tr>
+                <tr>
+                  <td>Boxford Metal Laser</td>
+                  <td>Off</td>
+                  <td>5.0%</td>
+                  <td>32.0 h</td>
+                  <td>Down since 24 Aug 16:22</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </section>
+      </div>
 
       <footer>
         <span>Concept dashboard for management review · not connected to live plant equipment</span>
@@ -524,6 +708,7 @@
     </main>
   </div>
 </div>
+<div class="toast" id="toast" role="status"></div>
 
 <script>
 (function(){
@@ -900,6 +1085,54 @@
       document.exitFullscreen();
     }
   });
+
+  function showPage(pageId){
+    var pages = document.querySelectorAll(".page");
+    var i;
+    for(i = 0; i < pages.length; i++){
+      pages[i].classList.remove("active");
+    }
+    document.getElementById("page-" + pageId).classList.add("active");
+
+    var buttons = document.querySelectorAll(".nav-btn[data-page]");
+    for(i = 0; i < buttons.length; i++){
+      var isActive = buttons[i].getAttribute("data-page") === pageId;
+      if(isActive){
+        buttons[i].classList.add("active");
+        buttons[i].setAttribute("aria-current", "page");
+      } else {
+        buttons[i].classList.remove("active");
+        buttons[i].removeAttribute("aria-current");
+      }
+    }
+
+    if(pageId === "reports"){
+      document.getElementById("page-title").textContent = "Management reports";
+    } else {
+      document.getElementById("page-title").textContent = "OEE Dashboard";
+      setTimeout(placeMapBadges, 40);
+    }
+  }
+
+  var navButtons = document.querySelectorAll(".nav-btn[data-page]");
+  var n;
+  for(n = 0; n < navButtons.length; n++){
+    navButtons[n].addEventListener("click", function(){
+      showPage(this.getAttribute("data-page"));
+    });
+  }
+
+  var fakeButtons = document.querySelectorAll(".report-btn");
+  for(n = 0; n < fakeButtons.length; n++){
+    fakeButtons[n].addEventListener("click", function(){
+      var toast = document.getElementById("toast");
+      toast.textContent = this.getAttribute("data-fake") + " is a sample file in this demo — no download.";
+      toast.classList.add("show");
+      setTimeout(function(){
+        toast.classList.remove("show");
+      }, 2800);
+    });
+  }
 
   makeHistory();
   syncTodayFromMachines();
