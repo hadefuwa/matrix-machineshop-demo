@@ -229,16 +229,13 @@
   }
   .RUNNING{color:var(--ok)}
   .IDLE{color:var(--idle)}
+  .OFF{color:#9a9a9a}
   .WARNING{color:var(--warn)}
   .m-oee{
     font-size:26px;font-weight:800;color:var(--green);
-    margin:8px 0 8px;
+    margin:8px 0 0;
   }
-  .m-oee span{font-size:12px;font-weight:500;color:var(--muted);margin-left:4px}
-  .mini{display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px}
-  .mini div{background:#1f1f1f;border-radius:6px;padding:6px 6px 5px}
-  .mini span{display:block;font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:.04em}
-  .mini strong{display:block;font-size:12px;margin-top:2px}
+  .m-oee span{font-size:12px;font-weight:500;color:var(--muted)}
 
   .chart-box{padding:0 18px 8px 8px;position:relative}
   .chart{
@@ -429,7 +426,7 @@
           <div class="panel-sub">Each badge is that machine’s live OEE. Hover (or tab to) a badge for Availability, Performance, Quality and status.</div>
           <div class="floor" id="floor-map">
             <svg class="map-svg" viewBox="80 30 1000 520" preserveAspectRatio="xMidYMid meet" aria-hidden="true"><polygon points="452.6,59.3 1044.6,355.3 700.5,527.4 108.5,231.4" fill="#141414" stroke="#333" stroke-width="2"></polygon><line x1="482.2" y1="88.9" x2="167.7" y2="246.2" stroke="#2a2a2a" stroke-width="1"></line><line x1="567.3" y1="131.4" x2="252.8" y2="288.7" stroke="#2a2a2a" stroke-width="1"></line><line x1="652.4" y1="174.0" x2="337.9" y2="331.3" stroke="#2a2a2a" stroke-width="1"></line><line x1="737.5" y1="216.6" x2="423.0" y2="373.8" stroke="#2a2a2a" stroke-width="1"></line><line x1="822.6" y1="259.1" x2="508.1" y2="416.4" stroke="#2a2a2a" stroke-width="1"></line><line x1="907.7" y1="301.6" x2="593.2" y2="458.9" stroke="#2a2a2a" stroke-width="1"></line><line x1="992.8" y1="344.2" x2="678.3" y2="501.5" stroke="#2a2a2a" stroke-width="1"></line><line x1="434.1" y1="87.0" x2="989.1" y2="364.6" stroke="#2a2a2a" stroke-width="1"></line><line x1="371.2" y1="118.5" x2="926.2" y2="396.0" stroke="#2a2a2a" stroke-width="1"></line><line x1="308.3" y1="149.9" x2="863.3" y2="427.4" stroke="#2a2a2a" stroke-width="1"></line><line x1="245.4" y1="181.4" x2="800.4" y2="458.9" stroke="#2a2a2a" stroke-width="1"></line><line x1="182.5" y1="212.8" x2="737.5" y2="490.4" stroke="#2a2a2a" stroke-width="1"></line><polygon points="457.8,104.8 550.3,151.1 476.3,188.1 383.8,141.8" fill="#0a0a0a" opacity="0.55"></polygon><polygon points="550.3,151.1 476.3,188.1 476.3,142.1 550.3,105.1" fill="#1a1a1a" stroke="#3a3a3a"></polygon><polygon points="383.8,141.8 476.3,188.1 476.3,142.1 383.8,95.8" fill="#262626" stroke="#3a3a3a"></polygon><polygon data-pad="mill" points="457.8,58.8 550.3,105.1 476.3,142.1 383.8,95.8" fill="#3d3d3d" stroke="#BB86FC" stroke-width="1.3"></polygon><polygon points="398.6,139.1 461.5,170.5 461.5,142.9 398.6,111.5" fill="#1b2838" stroke="#6ea8ff" stroke-width="0.9"></polygon><polygon points="550.3,163.6 514.8,181.4 514.8,157.4 550.3,139.6" fill="#171717" stroke="#3a3a3a"></polygon><polygon points="491.1,169.6 514.8,181.4 514.8,157.4 491.1,145.6" fill="#222222" stroke="#3a3a3a"></polygon><polygon points="526.6,127.8 550.3,139.6 514.8,157.4 491.1,145.6" fill="#353535" stroke="#9a9a9a" stroke-width="1.3"></polygon><polygon points="642.8,204.7 753.8,260.2 688.7,292.8 577.7,237.3" fill="#0a0a0a" opacity="0.55"></polygon><polygon points="753.8,260.2 688.7,292.8 688.7,276.8 753.8,244.2" fill="#1a1a1a" stroke="#3a3a3a"></polygon><polygon points="577.7,237.3 688.7,292.8 688.7,276.8 577.7,221.3" fill="#262626" stroke="#3a3a3a"></polygon><polygon data-pad="lathe" points="642.8,188.7 753.8,244.2 688.7,276.8 577.7,221.3" fill="#3d3d3d" stroke="#BB86FC" stroke-width="1.3"></polygon><polygon points="670.9,221.7 611.7,251.3 611.7,215.3 670.9,185.7" fill="#151515" stroke="#3a3a3a"></polygon><polygon points="580.6,235.8 611.7,251.3 611.7,215.3 580.6,199.8" fill="#202020" stroke="#3a3a3a"></polygon><polygon points="639.8,170.2 670.9,185.7 611.7,215.3 580.6,199.8" fill="#3a3a3a" stroke="#c9a6ff" stroke-width="1.3"></polygon><ellipse cx="643.5" cy="213.6" rx="9" ry="12" fill="#555555" stroke="#c9a6ff"></ellipse><polygon points="737.5,264.6 700.5,283.1 700.5,261.1 737.5,242.6" fill="#171717" stroke="#3a3a3a"></polygon><polygon points="685.7,275.8 700.5,283.1 700.5,261.1 685.7,253.8" fill="#222222" stroke="#3a3a3a"></polygon><polygon points="722.7,235.3 737.5,242.6 700.5,261.1 685.7,253.8" fill="#353535" stroke="#9a9a9a" stroke-width="1.3"></polygon><polygon points="850.0,300.9 964.7,358.3 879.6,400.8 764.9,343.5" fill="#0a0a0a" opacity="0.55"></polygon><polygon points="866.3,312.0 786.3,352.0 786.3,294.0 866.3,254.0" fill="#161616" stroke="#3a3a3a"></polygon><polygon points="767.1,342.4 786.3,352.0 786.3,294.0 767.1,284.4" fill="#222222" stroke="#3a3a3a"></polygon><polygon points="847.0,244.4 866.3,254.0 786.3,294.0 767.1,284.4" fill="#333333" stroke="#888888" stroke-width="1.3"></polygon><polygon points="955.1,356.4 875.1,396.4 875.1,338.4 955.1,298.4" fill="#161616" stroke="#3a3a3a"></polygon><polygon points="855.9,386.8 875.1,396.4 875.1,338.4 855.9,328.8" fill="#222222" stroke="#3a3a3a"></polygon><polygon points="935.8,288.8 955.1,298.4 875.1,338.4 855.9,328.8" fill="#333333" stroke="#888888" stroke-width="1.3"></polygon><polygon points="898.8,384.5 872.9,397.5 872.9,383.5 898.8,370.5" fill="#1a1a1a" stroke="#3a3a3a"></polygon><polygon points="764.9,343.5 872.9,397.5 872.9,383.5 764.9,329.5" fill="#262626" stroke="#3a3a3a"></polygon><polygon data-pad="press" points="790.8,316.5 898.8,370.5 872.9,383.5 764.9,329.5" fill="#3a3a3a" stroke="#BB86FC" stroke-width="1.3"></polygon><polygon points="949.9,310.8 926.2,322.6 926.2,310.6 949.9,298.8" fill="#1a1a1a" stroke="#3a3a3a"></polygon><polygon points="822.6,270.8 926.2,322.6 926.2,310.6 822.6,258.8" fill="#2a2a2a" stroke="#3a3a3a"></polygon><polygon points="846.3,247.0 949.9,298.8 926.2,310.6 822.6,258.8" fill="#4a4a4a" stroke="#c9a6ff" stroke-width="1.3"></polygon><polygon points="282.4,192.5 378.6,240.6 300.9,279.4 204.7,231.3" fill="#0a0a0a" opacity="0.55"></polygon><polygon points="378.6,240.6 300.9,279.4 300.9,239.4 378.6,200.6" fill="#1a1a1a" stroke="#3a3a3a"></polygon><polygon points="204.7,231.3 300.9,279.4 300.9,239.4 204.7,191.3" fill="#262626" stroke="#3a3a3a"></polygon><polygon data-pad="plas1" points="282.4,152.5 378.6,200.6 300.9,239.4 204.7,191.3" fill="#3d3d3d" stroke="#BB86FC" stroke-width="1.3"></polygon><polygon points="222.5,231.4 283.1,261.8 283.1,237.8 222.5,207.4" fill="#1b2838" stroke="#6ea8ff" stroke-width="0.9"></polygon><polygon points="332.0,186.9 317.2,194.3 317.2,180.3 332.0,172.9" fill="#222222" stroke="#3a3a3a"></polygon><polygon points="302.4,186.9 317.2,194.3 317.2,180.3 302.4,172.9" fill="#2c2c2c" stroke="#3a3a3a"></polygon><polygon points="317.2,165.5 332.0,172.9 317.2,180.3 302.4,172.9" fill="#454545" stroke="#c9a6ff" stroke-width="1.3"></polygon><polygon points="474.8,288.7 571.0,336.8 493.3,375.7 397.1,327.6" fill="#0a0a0a" opacity="0.55"></polygon><polygon points="571.0,336.8 493.3,375.7 493.3,335.7 571.0,296.8" fill="#1a1a1a" stroke="#3a3a3a"></polygon><polygon points="397.1,327.6 493.3,375.7 493.3,335.7 397.1,287.6" fill="#262626" stroke="#3a3a3a"></polygon><polygon data-pad="plas2" points="474.8,248.7 571.0,296.8 493.3,335.7 397.1,287.6" fill="#3d3d3d" stroke="#BB86FC" stroke-width="1.3"></polygon><polygon points="414.9,327.6 475.5,358.0 475.5,334.0 414.9,303.6" fill="#1b2838" stroke="#6ea8ff" stroke-width="0.9"></polygon><polygon points="524.4,283.1 509.6,290.5 509.6,276.5 524.4,269.1" fill="#222222" stroke="#3a3a3a"></polygon><polygon points="494.8,283.1 509.6,290.5 509.6,276.5 494.8,269.1" fill="#2c2c2c" stroke="#3a3a3a"></polygon><polygon points="509.6,261.7 524.4,269.1 509.6,276.5 494.8,269.1" fill="#454545" stroke="#c9a6ff" stroke-width="1.3"></polygon><polygon points="674.6,388.6 778.2,440.4 696.8,481.1 593.2,429.3" fill="#0a0a0a" opacity="0.55"></polygon><polygon points="778.2,440.4 696.8,481.1 696.8,429.1 778.2,388.4" fill="#1a1a1a" stroke="#3a3a3a"></polygon><polygon points="593.2,429.3 696.8,481.1 696.8,429.1 593.2,377.3" fill="#262626" stroke="#3a3a3a"></polygon><polygon data-pad="laser" points="674.6,336.6 778.2,388.4 696.8,429.1 593.2,377.3" fill="#3d3d3d" stroke="#BB86FC" stroke-width="1.3"></polygon><polygon points="612.4,427.5 677.6,460.0 677.6,428.8 612.4,396.3" fill="#1b2838" stroke="#6ea8ff" stroke-width="0.9"></polygon><polygon points="727.9,375.8 710.1,384.7 710.1,366.7 727.9,357.8" fill="#222222" stroke="#3a3a3a"></polygon><polygon points="692.4,375.8 710.1,384.7 710.1,366.7 692.4,357.8" fill="#2c2c2c" stroke="#3a3a3a"></polygon><polygon points="710.1,348.9 727.9,357.8 710.1,366.7 692.4,357.8" fill="#454545" stroke="#c9a6ff" stroke-width="1.3"></polygon></svg>
-            <button type="button" class="callout" data-id="mill" data-ox="0" data-oy="-8">
+            <button type="button" class="callout" data-id="mill" data-ox="8" data-oy="14">
               <div class="spark">OEE</div>
               <div><strong class="map-oee">—</strong> <span class="name">HAAS Mill</span></div>
               <div class="pop"></div>
@@ -464,7 +461,7 @@
 
         <article class="panel">
           <div class="panel-head">OEE by machine</div>
-          <div class="panel-sub">Purple number is that machine’s OEE. A low score here is dragging shop OEE down — look at Availability / Performance / Quality underneath to see why.</div>
+          <div class="panel-sub">Each machine’s OEE, plus whether it is Running, Idle or Off.</div>
           <div class="machines" id="machines"></div>
         </article>
       </section>
@@ -624,6 +621,18 @@
     document.getElementById("kpi-oee").textContent = pct(shop.oee);
   }
 
+  function statusLabel(status){
+    if(status === "RUNNING") return "Running";
+    if(status === "IDLE") return "Idle";
+    return "Off";
+  }
+
+  function statusClass(status){
+    if(status === "RUNNING") return "RUNNING";
+    if(status === "IDLE") return "IDLE";
+    return "OFF";
+  }
+
   function renderMachines(){
     var html = "";
     var i;
@@ -633,13 +642,9 @@
       html = html
         + '<article class="m-card">'
         + '<div class="m-top"><div><h3>' + m.name + '</h3><div class="m-type">' + m.type + '</div></div>'
-        + '<span class="status ' + m.status + '">' + m.status + '</span></div>'
-        + '<div class="m-oee">' + pct(oee) + '<span>OEE</span></div>'
-        + '<div class="mini">'
-        + '<div><span>Avail.</span><strong>' + pct(m.avail) + '</strong></div>'
-        + '<div><span>Perf.</span><strong>' + pct(m.perf) + '</strong></div>'
-        + '<div><span>Qual.</span><strong>' + pct(m.qual) + '</strong></div>'
-        + '</div></article>';
+        + '<span class="status ' + statusClass(m.status) + '">' + statusLabel(m.status) + '</span></div>'
+        + '<div class="m-oee">' + pct(oee) + '<span> OEE</span></div>'
+        + '</article>';
     }
     document.getElementById("machines").innerHTML = html;
   }
@@ -673,7 +678,7 @@
       btn.querySelector(".map-oee").textContent = pct(oee);
       btn.querySelector(".pop").innerHTML =
         "<h4>" + m.name + "</h4>"
-        + '<div class="pop-type">' + m.type + " · " + m.status + "</div>"
+        + '<div class="pop-type">' + m.type + " · " + statusLabel(m.status) + "</div>"
         + '<div class="pop-oee">' + pct(oee) + " OEE</div>"
         + '<div class="pop-row"><span>Availability</span><strong>' + pct(m.avail) + "</strong></div>"
         + '<div class="pop-row"><span>Performance</span><strong>' + pct(m.perf) + "</strong></div>"
