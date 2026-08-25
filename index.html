@@ -340,6 +340,47 @@
     border-radius:10px;padding:12px 16px;font-size:13px;
   }
   .toast.show{display:block}
+  .person-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;padding:0 16px 16px}
+  .person{
+    background:#161616;border:1px solid #2b2b2b;border-radius:10px;padding:14px;
+  }
+  .person h3{font-size:14px;margin-bottom:4px}
+  .person p{font-size:12px;color:var(--muted);line-height:1.4}
+  .cal-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:8px;padding:0 16px 16px}
+  .cal-day{
+    background:#161616;border:1px solid #2b2b2b;border-radius:10px;min-height:120px;padding:10px;
+  }
+  .cal-day strong{display:block;font-size:12px;margin-bottom:8px;color:var(--muted)}
+  .cal-event{font-size:11px;background:#222;border-radius:6px;padding:6px 7px;margin-bottom:6px;line-height:1.35}
+  .alarm-list{padding:0 16px 16px}
+  .alarm-item{
+    display:grid;grid-template-columns:90px 1fr auto;gap:12px;align-items:start;
+    padding:12px 0;border-bottom:1px solid #262626;font-size:13px;
+  }
+  .alarm-item:last-child{border-bottom:0}
+  .sev-high{color:#ff5a52;font-weight:700}
+  .sev-med{color:var(--warn);font-weight:700}
+  .sev-low{color:var(--idle);font-weight:700}
+  .setting-row{
+    display:flex;justify-content:space-between;align-items:center;gap:12px;
+    padding:14px 18px;border-bottom:1px solid #262626;
+  }
+  .setting-row:last-child{border-bottom:0}
+  .toggle{
+    width:42px;height:24px;border:0;border-radius:999px;background:#333;position:relative;flex:none;
+  }
+  .toggle.on{background:#6b4aa8}
+  .toggle i{
+    position:absolute;top:3px;left:3px;width:18px;height:18px;border-radius:50%;background:#fff;
+    display:block;transition:left .15s;
+  }
+  .toggle.on i{left:21px}
+  .sign-box{max-width:420px;margin:40px auto;text-align:center;padding:28px 24px}
+  .sign-box p{color:var(--muted);margin:12px 0 20px;font-size:14px;line-height:1.45}
+  @media (max-width:1100px){
+    .person-grid{grid-template-columns:1fr 1fr}
+    .cal-grid{grid-template-columns:1fr 1fr 1fr}
+  }
   @media (max-width:1100px){
     .report-grid{grid-template-columns:1fr}
     .kpis{grid-template-columns:repeat(2,1fr)}
@@ -368,24 +409,24 @@
       <button class="nav-btn" type="button" data-page="reports" title="Reports">
         <svg viewBox="0 0 24 24"><path d="M6 3h9l5 5v13a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2z"/><path d="M15 3v6h6M8 13h8M8 17h5"/></svg>
       </button>
-      <button class="nav-btn" type="button" title="People">
+      <button class="nav-btn" type="button" data-page="people" title="People">
         <svg viewBox="0 0 24 24"><circle cx="9" cy="8" r="3"/><path d="M3 19a6 6 0 0 1 12 0"/><circle cx="17" cy="9" r="2.2"/><path d="M21 19a4.5 4.5 0 0 0-4-4.4"/></svg>
       </button>
-      <button class="nav-btn" type="button" title="Calendar">
+      <button class="nav-btn" type="button" data-page="calendar" title="Calendar">
         <svg viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4"/></svg>
       </button>
-      <button class="nav-btn" type="button" title="Alarms">
+      <button class="nav-btn" type="button" data-page="alarms" title="Alarms">
         <svg viewBox="0 0 24 24"><path d="M21 15a2 2 0 0 1-2 2H8l-5 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
       </button>
-      <button class="nav-btn" type="button" title="Jobs">
+      <button class="nav-btn" type="button" data-page="jobs" title="Jobs">
         <svg viewBox="0 0 24 24"><rect x="4" y="3" width="16" height="18" rx="2"/><path d="M8 8h8M8 12h8M8 16h5"/></svg>
       </button>
     </nav>
     <div class="nav-bottom">
-      <button class="nav-btn" type="button" title="Settings">
+      <button class="nav-btn" type="button" data-page="settings" title="Settings">
         <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H8a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V8c.3.7 1 1.2 1.7 1.2H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg>
       </button>
-      <button class="nav-btn" type="button" title="Sign out">
+      <button class="nav-btn" type="button" data-page="signout" title="Sign out">
         <svg viewBox="0 0 24 24"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><path d="M16 17l5-5-5-5"/><path d="M21 12H9"/></svg>
       </button>
     </div>
@@ -698,6 +739,101 @@
               </tbody>
             </table>
           </div>
+        </section>
+      </div>
+
+      <div class="page" id="page-people">
+        <div class="formula">Who is on the shop this week. Names and skills are <strong>sample data</strong> for the demo.</div>
+        <section class="panel">
+          <div class="panel-head">Today’s crew</div>
+          <div class="panel-sub">Day shift · 25 Aug 2026</div>
+          <div class="person-grid">
+            <article class="person"><h3>Sam Reed</h3><p>Shift lead<br>Cover: mill, lathe, press brake</p></article>
+            <article class="person"><h3>Priya Shah</h3><p>Setter / operator<br>Cover: HAAS mill and lathe</p></article>
+            <article class="person"><h3>Jon Hale</h3><p>Press brake<br>Cover: PBSL only</p></article>
+            <article class="person"><h3>Leah Owen</h3><p>Laser cells<br>Cover: metal and plastic lasers</p></article>
+            <article class="person"><h3>Chris Adeyemi</h3><p>Inspection<br>CMM / first-off for mill jobs</p></article>
+            <article class="person"><h3>Night cover</h3><p>Unmanned after 18:00<br>Alarms to on-call phone</p></article>
+          </div>
+        </section>
+      </div>
+
+      <div class="page" id="page-calendar">
+        <div class="formula">Planned jobs and maintenance for the week. This is a <strong>dummy diary</strong>, not live MRP.</div>
+        <section class="panel">
+          <div class="panel-head">Week commencing 24 Aug 2026</div>
+          <div class="panel-sub">Grey cards are shop events. Nothing here books a real machine.</div>
+          <div class="cal-grid">
+            <div class="cal-day"><strong>Mon 24</strong><div class="cal-event">Mill · OP-1842</div><div class="cal-event">Lathe · SHAFT-08</div></div>
+            <div class="cal-day"><strong>Tue 25</strong><div class="cal-event">Press · BRKT-19</div><div class="cal-event">Metal laser down</div></div>
+            <div class="cal-day"><strong>Wed 26</strong><div class="cal-event">Plastic 2 · LABEL-22</div><div class="cal-event">Filter change · P1</div></div>
+            <div class="cal-day"><strong>Thu 27</strong><div class="cal-event">Mill · OP-1901</div><div class="cal-event">Lathe idle / gap</div></div>
+            <div class="cal-day"><strong>Fri 28</strong><div class="cal-event">Press setup day</div><div class="cal-event">Compressor service</div></div>
+            <div class="cal-day"><strong>Sat 29</strong><div class="cal-event">Closed</div></div>
+            <div class="cal-day"><strong>Sun 30</strong><div class="cal-event">Closed</div></div>
+          </div>
+        </section>
+      </div>
+
+      <div class="page" id="page-alarms">
+        <div class="formula">Live-looking alarm list for the demo. None of these are connected to plant.</div>
+        <section class="panel">
+          <div class="panel-head">Active and recent alarms</div>
+          <div class="panel-sub">2 still open · 2 cleared today</div>
+          <div class="alarm-list">
+            <div class="alarm-item"><div class="sev-high">HIGH</div><div>Metal Laser not powered<small style="display:block;color:var(--muted);margin-top:4px">Last powered 24 Aug 16:22 · OEE 5.0%</small></div><div>Open</div></div>
+            <div class="alarm-item"><div class="sev-med">MED</div><div>Plastic Laser 1 extraction / filter<small style="display:block;color:var(--muted);margin-top:4px">Machine showing Off · last powered 25 Aug 09:48</small></div><div>Open</div></div>
+            <div class="alarm-item"><div class="sev-med">MED</div><div>Press brake availability low<small style="display:block;color:var(--muted);margin-top:4px">Week OEE 40% · waiting / setup time</small></div><div>Watch</div></div>
+            <div class="alarm-item"><div class="sev-low">LOW</div><div>Compressor service approaching<small style="display:block;color:var(--muted);margin-top:4px">Dummy reminder · 42 hours remaining</small></div><div>Cleared</div></div>
+          </div>
+        </section>
+      </div>
+
+      <div class="page" id="page-jobs">
+        <div class="formula">Works orders on the cells. Job numbers are <strong>made up</strong> for the pitch.</div>
+        <section class="panel">
+          <div class="panel-head">Jobs on the shop</div>
+          <div class="panel-sub">What a manager would see if this later linked to MRP.</div>
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>Job</th>
+                  <th>Machine</th>
+                  <th>Status</th>
+                  <th>Qty</th>
+                  <th>Due</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr><td>OP-1842</td><td>HAAS Mill</td><td>Running</td><td>40 / 80</td><td>26 Aug</td></tr>
+                <tr><td>SHAFT-08</td><td>HAAS Lathe</td><td>Idle</td><td>42 / 60</td><td>27 Aug</td></tr>
+                <tr><td>BRKT-19</td><td>Press brake</td><td>Running</td><td>126 bends</td><td>28 Aug</td></tr>
+                <tr><td>PANEL-07</td><td>Metal Laser</td><td>Off</td><td>0 / 24</td><td>Held</td></tr>
+                <tr><td>LABEL-22</td><td>Plastic Laser 2</td><td>Running</td><td>18 / 50</td><td>29 Aug</td></tr>
+                <tr><td>COVER-11</td><td>Plastic Laser 1</td><td>Off</td><td>Queued</td><td>1 Sep</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </section>
+      </div>
+
+      <div class="page" id="page-settings">
+        <div class="formula">Demo preferences only. Toggles do not save to a server.</div>
+        <section class="panel">
+          <div class="panel-head">Shop display</div>
+          <div class="setting-row"><div><strong>Live simulation</strong><p style="color:var(--muted);font-size:12px;margin-top:4px">Numbers on the dashboard keep moving</p></div><button class="toggle on" type="button" id="set-sim" aria-pressed="true"><i></i></button></div>
+          <div class="setting-row"><div><strong>Show OEE formula banner</strong><p style="color:var(--muted);font-size:12px;margin-top:4px">The grey explanation strip on the dashboard</p></div><button class="toggle on" type="button" id="set-formula" aria-pressed="true"><i></i></button></div>
+          <div class="setting-row"><div><strong>24-hour clock</strong><p style="color:var(--muted);font-size:12px;margin-top:4px">Timestamps on machine cards</p></div><button class="toggle on" type="button"><i></i></button></div>
+          <div class="setting-row"><div><strong>Email weekly pack</strong><p style="color:var(--muted);font-size:12px;margin-top:4px">Would go to production manager in a real system</p></div><button class="toggle" type="button"><i></i></button></div>
+        </section>
+      </div>
+
+      <div class="page" id="page-signout">
+        <section class="panel sign-box">
+          <div class="panel-head" style="padding-bottom:0">Sign out</div>
+          <p>This is a local demo. There is no real login. Use the button below to go back to the dashboard.</p>
+          <button class="report-btn" type="button" id="btn-back-dash">Back to dashboard</button>
         </section>
       </div>
 
@@ -1108,6 +1244,18 @@
 
     if(pageId === "reports"){
       document.getElementById("page-title").textContent = "Management reports";
+    } else if(pageId === "people"){
+      document.getElementById("page-title").textContent = "People";
+    } else if(pageId === "calendar"){
+      document.getElementById("page-title").textContent = "Calendar";
+    } else if(pageId === "alarms"){
+      document.getElementById("page-title").textContent = "Alarms";
+    } else if(pageId === "jobs"){
+      document.getElementById("page-title").textContent = "Jobs";
+    } else if(pageId === "settings"){
+      document.getElementById("page-title").textContent = "Settings";
+    } else if(pageId === "signout"){
+      document.getElementById("page-title").textContent = "Sign out";
     } else {
       document.getElementById("page-title").textContent = "OEE Dashboard";
       setTimeout(placeMapBadges, 40);
@@ -1125,12 +1273,40 @@
   var fakeButtons = document.querySelectorAll(".report-btn");
   for(n = 0; n < fakeButtons.length; n++){
     fakeButtons[n].addEventListener("click", function(){
+      if(this.id === "btn-back-dash") return;
       var toast = document.getElementById("toast");
       toast.textContent = this.getAttribute("data-fake") + " is a sample file in this demo — no download.";
       toast.classList.add("show");
       setTimeout(function(){
         toast.classList.remove("show");
       }, 2800);
+    });
+  }
+
+  document.getElementById("btn-back-dash").addEventListener("click", function(){
+    showPage("dashboard");
+  });
+
+  var toggles = document.querySelectorAll(".toggle");
+  for(n = 0; n < toggles.length; n++){
+    toggles[n].addEventListener("click", function(){
+      var isOn = this.classList.contains("on");
+      if(isOn){
+        this.classList.remove("on");
+        this.setAttribute("aria-pressed", "false");
+      } else {
+        this.classList.add("on");
+        this.setAttribute("aria-pressed", "true");
+      }
+      if(this.id === "set-sim"){
+        paused = !this.classList.contains("on");
+      }
+      if(this.id === "set-formula"){
+        var banner = document.querySelector("#page-dashboard .formula");
+        if(banner){
+          banner.style.display = this.classList.contains("on") ? "" : "none";
+        }
+      }
     });
   }
 
