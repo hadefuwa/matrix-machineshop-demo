@@ -142,32 +142,25 @@
     padding:0 18px 12px;
     font-size:12px;color:var(--muted);line-height:1.45;
   }
-  #daily-record{min-height:0}
+  .map-panel{overflow:visible}
 
   .floor{
-    position:relative;height:380px;margin:0 12px 18px;
-    border-radius:10px;overflow:hidden;
+    position:relative;
+    width:calc(100% - 24px);
+    margin:0 12px 18px;
+    height:min(480px, 48vw);
+    border-radius:10px;
+    overflow:visible;
     background:
       radial-gradient(circle at 20% 30%, #2a2a2a 0 2px, transparent 2px),
       radial-gradient(circle at 80% 70%, #2a2a2a 0 2px, transparent 2px),
       linear-gradient(135deg,#1a1a1a,#151515);
   }
-  .iso{
-    position:absolute;inset:18px 10px 10px;
-    transform:perspective(900px) rotateX(52deg) rotateZ(-32deg);
-    transform-origin:center;
-    pointer-events:none;
+  .floor .map-svg{
+    position:absolute;inset:0;
+    width:100%;height:100%;
+    display:block;
   }
-  .pad{
-    position:absolute;background:#2b2b2b;border:1px solid #3a3a3a;
-    box-shadow:8px 8px 0 #0e0e0e;
-  }
-  .pad.a{left:8%;top:18%;width:38%;height:28%}
-  .pad.b{left:52%;top:10%;width:34%;height:24%}
-  .pad.c{left:18%;top:52%;width:28%;height:22%}
-  .pad.d{left:52%;top:42%;width:40%;height:30%}
-  .pad.e{left:8%;top:78%;width:22%;height:14%}
-
   .callout{
     position:absolute;z-index:2;
     display:flex;align-items:center;gap:8px;
@@ -177,6 +170,7 @@
     white-space:nowrap;
     color:inherit;font:inherit;
     cursor:pointer;
+    transform:translate(-50%,-115%);
   }
   .callout:hover,.callout:focus{
     z-index:8;
@@ -194,8 +188,9 @@
   .pop{
     display:none;
     position:absolute;
-    left:0;top:calc(100% + 10px);
+    left:50%;top:calc(100% + 10px);
     width:220px;
+    margin-left:-110px;
     background:#121212;
     border:1px solid #3a3a3a;
     border-radius:12px;
@@ -206,19 +201,12 @@
     z-index:9;
   }
   .callout:hover .pop,.callout:focus .pop{display:block}
-  .c3 .pop,.c4 .pop{left:auto;right:0}
-  .c5 .pop,.c6 .pop{top:auto;bottom:calc(100% + 10px)}
+  .callout.pop-up .pop{top:auto;bottom:calc(100% + 10px)}
   .pop h4{font-size:13px;margin-bottom:2px}
   .pop .pop-type{font-size:11px;color:var(--muted);margin-bottom:8px}
   .pop .pop-oee{font-size:22px;font-weight:800;color:var(--green);margin-bottom:8px}
   .pop .pop-row{display:flex;justify-content:space-between;font-size:12px;padding:4px 0;border-top:1px solid #2a2a2a}
   .pop .pop-row span{color:var(--muted)}
-  .c1{left:7%;top:16%}
-  .c2{left:40%;top:8%}
-  .c3{left:66%;top:20%}
-  .c4{right:7%;top:46%}
-  .c5{left:18%;bottom:16%}
-  .c6{left:46%;bottom:8%}
 
   .machines{
     display:grid;
@@ -425,41 +413,43 @@
         <div class="panel-head">Shop floor map</div>
         <div class="panel-sub">Each badge is that machine’s live OEE. Hover (or tab to) a badge for Availability, Performance, Quality and status.</div>
         <div class="floor" id="floor-map">
-          <div class="iso" aria-hidden="true">
-            <div class="pad a"></div>
-            <div class="pad b"></div>
-            <div class="pad c"></div>
-            <div class="pad d"></div>
-            <div class="pad e"></div>
-          </div>
-          <button type="button" class="callout c1" data-id="mill">
+          <svg class="map-svg" viewBox="0 0 1120 500" preserveAspectRatio="xMidYMid meet" aria-hidden="true">
+            <polygon points="551,40 1120,326 680,490 120,210" fill="#1b1b1b" stroke="#2e2e2e" stroke-width="2"></polygon>
+            <polygon data-pad="mill" points="560.0,80.0 696.4,148.2 586.4,203.2 450.0,135.0" fill="#2f2f2f" stroke="#4a4a4a" stroke-width="2"></polygon>
+            <polygon data-pad="lathe" points="740.4,170.2 876.8,238.4 766.8,293.4 630.4,225.2" fill="#2f2f2f" stroke="#4a4a4a" stroke-width="2"></polygon>
+            <polygon data-pad="press" points="920.8,260.4 1057.2,328.6 947.2,383.6 810.8,315.4" fill="#2f2f2f" stroke="#4a4a4a" stroke-width="2"></polygon>
+            <polygon data-pad="plas1" points="406.0,157.0 542.4,225.2 432.4,280.2 296.0,212.0" fill="#2f2f2f" stroke="#4a4a4a" stroke-width="2"></polygon>
+            <polygon data-pad="plas2" points="586.4,247.2 722.8,315.4 612.8,370.4 476.4,302.2" fill="#2f2f2f" stroke="#4a4a4a" stroke-width="2"></polygon>
+            <polygon data-pad="laser" points="766.8,337.4 903.2,405.6 793.2,460.6 656.8,392.4" fill="#2f2f2f" stroke="#4a4a4a" stroke-width="2"></polygon>
+          </svg>
+          <button type="button" class="callout" data-id="mill">
             <div class="spark">OEE</div>
             <div><strong class="map-oee">—</strong> <span class="name">HAAS Mill</span></div>
             <div class="pop"></div>
           </button>
-          <button type="button" class="callout c2" data-id="lathe">
+          <button type="button" class="callout" data-id="lathe">
             <div class="spark">OEE</div>
             <div><strong class="map-oee">—</strong> <span class="name">HAAS Lathe</span></div>
             <div class="pop"></div>
           </button>
-          <button type="button" class="callout c3" data-id="press">
+          <button type="button" class="callout" data-id="press">
             <div class="spark">OEE</div>
             <div><strong class="map-oee">—</strong> <span class="name">Press Brake</span></div>
             <div class="pop"></div>
           </button>
-          <button type="button" class="callout c4" data-id="laser">
-            <div class="spark">OEE</div>
-            <div><strong class="map-oee">—</strong> <span class="name">Metal Laser</span></div>
-            <div class="pop"></div>
-          </button>
-          <button type="button" class="callout c5" data-id="plas1">
+          <button type="button" class="callout pop-up" data-id="plas1">
             <div class="spark">OEE</div>
             <div><strong class="map-oee">—</strong> <span class="name">Plastic Laser 1</span></div>
             <div class="pop"></div>
           </button>
-          <button type="button" class="callout c6" data-id="plas2">
+          <button type="button" class="callout pop-up" data-id="plas2">
             <div class="spark">OEE</div>
             <div><strong class="map-oee">—</strong> <span class="name">Plastic Laser 2</span></div>
+            <div class="pop"></div>
+          </button>
+          <button type="button" class="callout pop-up" data-id="laser">
+            <div class="spark">OEE</div>
+            <div><strong class="map-oee">—</strong> <span class="name">Metal Laser</span></div>
             <div class="pop"></div>
           </button>
         </div>
@@ -644,7 +634,22 @@
     document.getElementById("machines").innerHTML = html;
   }
 
-  function renderMap(){
+  function placeMapBadges(){
+    var floor = document.getElementById("floor-map");
+    var floorBox = floor.getBoundingClientRect();
+    var pads = floor.querySelectorAll("[data-pad]");
+    var i;
+    for(i = 0; i < pads.length; i++){
+      var pad = pads[i];
+      var btn = floor.querySelector('.callout[data-id="' + pad.getAttribute("data-pad") + '"]');
+      if(!btn) continue;
+      var box = pad.getBoundingClientRect();
+      var left = (box.left + box.width / 2 - floorBox.left) / floorBox.width * 100;
+      var top = (box.top + box.height * 0.35 - floorBox.top) / floorBox.height * 100;
+      btn.style.left = left + "%";
+      btn.style.top = top + "%";
+    }
+  }
     var i;
     for(i = 0; i < machines.length; i++){
       var m = machines[i];
@@ -660,6 +665,7 @@
         + '<div class="pop-row"><span>Performance</span><strong>' + pct(m.perf) + "</strong></div>"
         + '<div class="pop-row"><span>Quality</span><strong>' + pct(m.qual) + "</strong></div>";
     }
+    placeMapBadges();
   }
 
   function renderTable(){
@@ -859,6 +865,8 @@
   renderMap();
   renderTable();
   renderChart();
+  window.addEventListener("resize", placeMapBadges);
+  setTimeout(placeMapBadges, 50);
   setInterval(simulate, 2200);
 
 })();
